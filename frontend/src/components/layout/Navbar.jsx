@@ -20,8 +20,8 @@ function Navbar() {
           {/* LOGO */}
           <Link to="/">
             <Typography
-              variant="h3"
-              className="font-bold text-textBlue"
+              variant="h2"
+              className="font-bold text-primary"
             >
               TutorNest
             </Typography>

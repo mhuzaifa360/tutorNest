@@ -11,6 +11,7 @@ import Footer from '../components/layout/Footer'
 import StudentDashboard from '../pages/Dashboard/StudentDashboard'
 import TutorDashboard from '../pages/Dashboard/TutorDashboard'
 import Teachers from '../pages/Teachers'
+import Courses from '../pages/Courses'
 
 
 function AppRoutes() {
@@ -23,14 +24,15 @@ function AppRoutes() {
       </div>
       {/* CREATE ROUTES FOR ALL PAGES */}
         <Routes>
-            <Route path='' element={<Home />}/>
-            <Route path='' element={<Login />}/>
-            <Route path='' element={<Signup />}/>
-            <Route path='' element={<About />}/>
-            <Route path='' element={<Contact />}/>
-            <Route path='' element={<Teachers />}/>
-            <Route path='' element={<StudentDashboard />}/>
-            <Route path='' element={<TutorDashboard />}/>
+            <Route path='/' element={<Home />}/>
+            <Route path='/login' element={<Login />}/>
+            <Route path='/signup' element={<Signup />}/>
+            <Route path='/about' element={<About />}/>
+            <Route path='/contact' element={<Contact />}/>
+            <Route path='/teachers' element={<Teachers />}/>
+            <Route path='/courses' element={<Courses />}/>
+            <Route path='/studentdashboard' element={<StudentDashboard />}/>
+            <Route path='tutordashboard' element={<TutorDashboard />}/>
         </Routes>
         {/* FOOTER */}
           <Footer />
