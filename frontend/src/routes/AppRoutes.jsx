@@ -10,7 +10,7 @@ import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import StudentDashboard from '../pages/Dashboard/StudentDashboard'
 import TutorDashboard from '../pages/Dashboard/TutorDashboard'
-import Tutors from '../pages/Tutors'
+import Teachers from '../pages/Teachers'
 
 
 function AppRoutes() {
@@ -28,7 +28,7 @@ function AppRoutes() {
             <Route path='' element={<Signup />}/>
             <Route path='' element={<About />}/>
             <Route path='' element={<Contact />}/>
-            <Route path='' element={<Tutors />}/>
+            <Route path='' element={<Teachers />}/>
             <Route path='' element={<StudentDashboard />}/>
             <Route path='' element={<TutorDashboard />}/>
         </Routes>

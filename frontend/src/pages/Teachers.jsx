@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Tutors() {
+function Teachers() {
   return (
     <div>
       
@@ -8,4 +8,4 @@ function Tutors() {
   )
 }
 
-export default Tutors
+export default Teachers

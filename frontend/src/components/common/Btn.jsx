@@ -1,20 +1,46 @@
 import React from "react";
 
-function Btn({ variant = "solid", size = "md", children, className, ...props }) {
-  // 1. Your Custom Color Types
+function Btn({
+  variant = "blue",
+  children,
+  className = "",
+  ...props
+}) {
+
   const variantStyle = {
-    blue: "bg-blueBG text-secondary ",
-    white: "bg-secondary text-textBlack hover:bg-lightGreyBG",
+    blue: `
+      bg-blueBG 
+      text-textWhite 
+      hover:opacity-90
+    `,
+
+    white: `
+      bg-secondary 
+      text-textBlack 
+      hover:bg-lightGreyBG
+      border border-gray-200
+    `,
   };
 
-  // 3. BASE STYLE: Added your specific padding here
-  // p-2 = top/bottom | px-6 = left/right (shorthand for pr-6 pl-6)
-  const baseStyle =
-    "font-medium text-sm px-6  border rounded-md whitespace-nowrap flex justify-center items-center min-h-10 button";
+  const baseStyle = `
+    font-medium
+    text-sm
+    px-6
+    min-h-10
+    rounded-lg
+    whitespace-nowrap
+    flex
+    justify-center
+    items-center
+    transition-all
+    duration-200
+    active:scale-95
+    disabled:opacity-50
+  `;
 
   return (
     <button
-      className={`${baseStyle} ${variantStyle[variant]} ${className || ""}`}
+      className={`${baseStyle} ${variantStyle[variant]} ${className}`}
       {...props}
     >
       {children}

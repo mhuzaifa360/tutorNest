@@ -1,5 +1,4 @@
 
-
 export const navbar = [
     {
         id: 1,
@@ -9,7 +8,7 @@ export const navbar = [
     {
         id: 2,
         pathName: "/teachers",
-        pathValue: "Teacher"
+        pathValue: "Teachers"
     },
     {
         id: 3,
