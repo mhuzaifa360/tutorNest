@@ -1,135 +1,135 @@
-import { Student } from "../models/index.js";
+import { Teacher } from "../models/index.js";
 
 // =========================
-// CREATE STUDENT
+// CREATE TEACHER
 // =========================
-export const createStudent = async (req, res) => {
+export const createTeacher = async (req, res) => {
   try {
-    const student = await Student.create(req.body);
+    const teacher = await Teacher.create(req.body);
 
     return res.status(201).json({
       success: true,
-      message: "Student created successfully",
-      data: student,
+      message: "Teacher created successfully",
+      data: teacher,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error creating student",
+      message: "Error creating teacher",
       error: error.message,
     });
   }
 };
 
 // =========================
-// GET ALL STUDENTS
+// GET ALL TEACHERS
 // =========================
-export const getStudents = async (req, res) => {
+export const getTeachers = async (req, res) => {
   try {
-    const students = await Student.findAll();
+    const teachers = await Teacher.findAll();
 
     return res.status(200).json({
       success: true,
-      message: "Students fetched successfully",
-      data: students,
+      message: "Teachers fetched successfully",
+      data: teachers,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error fetching students",
+      message: "Error fetching teachers",
       error: error.message,
     });
   }
 };
 
 // =========================
-// GET SINGLE STUDENT
+// GET SINGLE TEACHER
 // =========================
-export const getSingleStudent = async (req, res) => {
+export const getSingleTeacher = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const teacher = await Teacher.findByPk(id);
 
-    if (!student) {
+    if (!teacher) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Teacher not found",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Student fetched successfully",
-      data: student,
+      message: "Teacher fetched successfully",
+      data: teacher,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error fetching student",
+      message: "Error fetching teacher",
       error: error.message,
     });
   }
 };
 
 // =========================
-// UPDATE STUDENT
+// UPDATE TEACHER
 // =========================
-export const updateStudent = async (req, res) => {
+export const updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const teacher = await Teacher.findByPk(id);
 
-    if (!student) {
+    if (!teacher) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Teacher not found",
       });
     }
 
-    await student.update(req.body);
+    await teacher.update(req.body);
 
     return res.status(200).json({
       success: true,
-      message: "Student updated successfully",
-      data: student,
+      message: "Teacher updated successfully",
+      data: teacher,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error updating student",
+      message: "Error updating teacher",
       error: error.message,
     });
   }
 };
 
 // =========================
-// DELETE STUDENT
+// DELETE TEACHER
 // =========================
-export const deleteStudents = async (req, res) => {
+export const deleteTeachers = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const teacher = await Teacher.findByPk(id);
 
-    if (!student) {
+    if (!teacher) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Teacher not found",
       });
     }
 
-    await student.destroy();
+    await teacher.destroy();
 
     return res.status(200).json({
       success: true,
-      message: "Student deleted successfully",
+      message: "Teacher deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error deleting student",
+      message: "Error deleting teacher",
       error: error.message,
     });
   }
