@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 // ROUTES
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes from './routes/authRoutes.js'
 import studentRoutes from "./routes/studentRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
@@ -15,6 +15,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.use("/uploads", express.static("uploads"));
 
 // MIDDLEWARES
 app.use(cors());
