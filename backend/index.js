@@ -29,30 +29,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// =========================
+
 // BASE API PREFIX (v1)
-// =========================
 const API_PREFIX = "/v1";
 
-// =========================
-// ROUTES
-// =========================
-app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/students`, studentRoutes);
-app.use(`${API_PREFIX}/teachers`, teacherRoutes);
-app.use(`${API_PREFIX}/courses`, courseRoutes);
-app.use(`${API_PREFIX}/enrollments`, enrollmentRoutes);
 
-// =========================
+// ROUTES
+app.use(`${API_PREFIX}/auth`, authRoutes);  // auth routes
+app.use(`${API_PREFIX}/students`, studentRoutes); // student routes
+app.use(`${API_PREFIX}/teachers`, teacherRoutes); // teacher routes
+app.use(`${API_PREFIX}/courses`, courseRoutes); // course routes
+app.use(`${API_PREFIX}/enrollments`, enrollmentRoutes); // enrollment routes
+
+
 // HEALTH CHECK
-// =========================
 app.get("/", (req, res) => {
   res.send("🚀 TutorNest API Running");
 });
 
-// =========================
+
 // SERVER START
-// =========================
 const startServer = async () => {
   try {
     const dbConnected = await connectDB();

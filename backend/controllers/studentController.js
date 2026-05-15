@@ -1,9 +1,7 @@
 import Student from "../models/studentModel.js";
 import bcrypt from "bcryptjs";
 
-// =========================
 // CREATE STUDENT
-// =========================
 export const createStudent = async (req, res) => {
   try {
 
@@ -47,9 +45,7 @@ export const createStudent = async (req, res) => {
   }
 };
 
-// =========================
 // GET ALL STUDENTS
-// =========================
 export const getStudents = async (req, res) => {
   try {
     const students = await Student.findAll();
@@ -68,9 +64,7 @@ export const getStudents = async (req, res) => {
   }
 };
 
-// =========================
 // GET SINGLE STUDENT
-// =========================
 export const getSingleStudent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,9 +92,7 @@ export const getSingleStudent = async (req, res) => {
   }
 };
 
-// =========================
 // UPDATE STUDENT
-// =========================
 export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -112,6 +104,12 @@ export const updateStudent = async (req, res) => {
         success: false,
         message: "Student not found",
       });
+    }
+
+    // 🔥 PASSWORD HASH LOGIC
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      req.body.password = await bcrypt.hash(req.body.password, salt);
     }
 
     await student.update(req.body);
@@ -130,10 +128,8 @@ export const updateStudent = async (req, res) => {
   }
 };
 
-// =========================
 // DELETE STUDENT
-// =========================
-export const deleteStudents = async (req, res) => {
+export const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
 

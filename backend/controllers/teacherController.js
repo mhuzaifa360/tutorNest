@@ -18,7 +18,8 @@ export const createTeacher = async (req, res) => {
         message: "Teacher already exists",
       });
     }
-
+    console.log(res.body);
+    
     // hash password
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -112,6 +113,12 @@ export const updateTeacher = async (req, res) => {
         success: false,
         message: "Teacher not found",
       });
+    }
+
+    // 🔥 PASSWORD HASH LOGIC
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      req.body.password = await bcrypt.hash(req.body.password, salt);
     }
 
     await teacher.update(req.body);

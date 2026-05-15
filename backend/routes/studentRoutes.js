@@ -5,46 +5,27 @@ import {
   getStudents,
   getSingleStudent,
   updateStudent,
-  deleteStudents,
+  deleteStudent,
 } from "../controllers/studentController.js";
 
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// =========================
-// CREATE STUDENT
-// =========================
-router.post("/createStudent", createStudent);
-
-// =========================
-// GET ALL STUDENTS
-// =========================
+router.post("/createStudent", createStudent); // CREATE STUDENT
+router.get("/getSingleStudent/:id", verifyToken, getSingleStudent); // GET SINGLE STUDENT
+router.put("/updateStudent/:id", verifyToken, updateStudent); // UPDATE STUDENT
 router.get(
   "/getStudents",
   verifyToken,
   authorizeRoles("teacher"), // optional: teacher only
   getStudents,
-);
-
-// =========================
-// GET SINGLE STUDENT
-// =========================
-router.get("/getSingleStudent/:id", verifyToken, getSingleStudent);
-
-// =========================
-// UPDATE STUDENT
-// =========================
-router.put("/updateStudent/:id", verifyToken, updateStudent);
-
-// =========================
-// DELETE STUDENT
-// =========================
+); // GET ALL STUDENTS
 router.delete(
-  "/deleteStudents/:id",
+  "/deleteStudent/:id",
   verifyToken,
   authorizeRoles("teacher"),
-  deleteStudents,
-);
+  deleteStudent,
+); // DELETE STUDENT
 
 export default router;
