@@ -4,7 +4,7 @@ import {
   applyJob,
   getApplications,
   getSingleApplication,
-  updateApplication,
+  updateApplicationStatus,
   deleteApplication,
 } from "../controllers/applicationController.js";
 
@@ -42,7 +42,7 @@ router.put(
   "/updateApplication/:id",
   verifyToken,
   authorizeRoles("student"),
-  updateApplication
+  updateApplicationStatus
 );
 
 // DELETE APPLICATION  |  Role: teacher (withdraw own application)
