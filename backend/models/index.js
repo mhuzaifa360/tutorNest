@@ -6,6 +6,7 @@ import { Job } from './jobsModel.js';
 import { Application } from './applicationsModel.js';
 import { Review } from './reviewsModel.js';
 import { SavedJob } from './savedJobModel.js';
+import { Notification } from './notificationModel.js';
 
 // =========================
 // TEACHER <-> COURSE
@@ -128,4 +129,4 @@ SavedJob.belongsTo(Job, {
   as: "job",
 });
 
-export { Teacher, Course, Student, Enrollment, Job, Application, Review, SavedJob };
+export { Teacher, Course, Student, Enrollment, Job, Application, Review, SavedJob, Notification };
