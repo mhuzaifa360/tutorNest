@@ -20,15 +20,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// =========================
 // STATIC FILES (UPLOADS)
-// =========================
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
 app.use("/uploads", express.static(uploadDir));
 
-// =========================
 // MIDDLEWARES
-// =========================
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "*",
   credentials: true,

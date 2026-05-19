@@ -19,8 +19,8 @@ router.get("/getTeachers",verifyToken,authorizeRoles("admin","teacher"),getTeach
 // CREATE TEACHER | Role: Any (Public)
 router.post("/createTeacher", createTeacher); 
 
-// GET SINGLE TEACHER | Role: Authenticated Users
-router.get("/getSingleTeacher/:id", verifyToken, getSingleTeacher); 
+// GET SINGLE TEACHER WITH RATING | Role: Authenticated Users
+router.get("/getTeacherRating/:id", getSingleTeacher);  
 
 // UPDATE TEACHER | Role: teacher
 router.put("/updateTeacher/:id", verifyToken, authorizeRoles("teacher"), updateTeacher, ); 
