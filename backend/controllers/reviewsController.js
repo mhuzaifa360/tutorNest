@@ -1,4 +1,4 @@
-import { Review } from "../models/Review.js";
+import { Review } from "../models/index.js";
 
 // CREATE REVIEW
 export const createReview = async (req, res) => {

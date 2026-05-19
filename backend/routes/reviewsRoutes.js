@@ -6,7 +6,7 @@ import {
   getSingleReview,
   updateReview,
   deleteReview,
-} from "../controllers/reviewController.js";
+} from "../controllers/reviewsController.js";
 
 import {
   verifyToken,
@@ -16,32 +16,18 @@ import {
 const router = express.Router();
 
 // CREATE REVIEW (student only)
-router.post(
-  "/create",
-  verifyToken,
-  authorizeRoles("student"),
-  createReview
-);
+router.post("/createReview",verifyToken,authorizeRoles("student"),createReview);
 
 // GET ALL
-router.get("/", getReviews);
+router.get("/getReviews", getReviews);
 
 // GET SINGLE
-router.get("/:id", getSingleReview);
+router.get("/getSingleReview/:id", getSingleReview);
 
 // UPDATE
-router.put(
-  "/:id",
-  verifyToken,
-  authorizeRoles("student"),
-  updateReview
-);
+router.put("/updateReview/:id",verifyToken,authorizeRoles("student"),updateReview);
 
 // DELETE
-router.delete(
-  "/:id",
-  verifyToken,
-  deleteReview
-);
+router.delete("/deleteReview/:id",verifyToken,deleteReview);
 
 export default router;

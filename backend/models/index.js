@@ -4,6 +4,7 @@ import Student from './studentModel.js';
 import { Enrollment } from './enrollmentModel.js';
 import { Job } from './jobsModel.js';
 import { Application } from './applicationsModel.js';
+import { Review } from './reviewsModel.js';
 
 // =========================
 // TEACHER <-> COURSE
@@ -74,4 +75,30 @@ Application.belongsTo(Teacher, {
   as: "tutor",
 });
 
-export { Teacher, Course, Student, Enrollment, Job, Application };
+// =========================
+// STUDENT <-> REVIEW (One-to-Many)
+// =========================
+Student.hasMany(Review, {
+  foreignKey: "studentId",
+  as: "reviews",
+});
+
+Review.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+// =========================
+// TEACHER <-> REVIEW (One-to-Many)
+// =========================
+Teacher.hasMany(Review, {
+  foreignKey: "teacherId",
+  as: "reviews",
+});
+
+Review.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
+export { Teacher, Course, Student, Enrollment, Job, Application, Review };
