@@ -1,9 +1,8 @@
 import { Teacher } from "../models/index.js";
 import bcrypt from "bcryptjs";
+import { getTeacherRatingStats } from "../utils/ratingHelper.js";
 
-// =========================
 // CREATE TEACHER
-// =========================
 export const createTeacher = async (req, res) => {
   try {
 
@@ -48,9 +47,7 @@ export const createTeacher = async (req, res) => {
   }
 };
 
-// =========================
 // GET ALL TEACHERS
-// =========================
 export const getTeachers = async (req, res) => {
   try {
     const teachers = await Teacher.findAll();
@@ -69,14 +66,10 @@ export const getTeachers = async (req, res) => {
   }
 };
 
-// =========================
 // GET SINGLE TEACHER
-// =========================
 export const getSingleTeacher = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const teacher = await Teacher.findByPk(id);
+    const teacher = await Teacher.findByPk(req.params.id);
 
     if (!teacher) {
       return res.status(404).json({
@@ -85,11 +78,17 @@ export const getSingleTeacher = async (req, res) => {
       });
     }
 
+    // ⭐ rating calculate
+    const rating = await getTeacherRatingStats(teacher.id);
+
     return res.status(200).json({
       success: true,
-      message: "Teacher fetched successfully",
-      data: teacher,
+      data: {
+        ...teacher.toJSON(),
+        rating,
+      },
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -99,9 +98,7 @@ export const getSingleTeacher = async (req, res) => {
   }
 };
 
-// =========================
 // UPDATE TEACHER
-// =========================
 export const updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
@@ -137,9 +134,7 @@ export const updateTeacher = async (req, res) => {
   }
 };
 
-// =========================
 // DELETE TEACHER
-// =========================
 export const deleteTeachers = async (req, res) => {
   try {
     const { id } = req.params;
