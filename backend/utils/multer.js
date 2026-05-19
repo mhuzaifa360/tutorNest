@@ -1,13 +1,15 @@
 import multer from "multer";
 import path from "path";
 
+const uploadDir = process.env.UPLOAD_DIR || "uploads";
+
 // STORAGE CONFIG
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (req.baseUrl.includes("student")) {
-      cb(null, "uploads/students");
+      cb(null, `${uploadDir}/students`);
     } else {
-      cb(null, "uploads/tutors");
+      cb(null, `${uploadDir}/tutors`);
     }
   },
 

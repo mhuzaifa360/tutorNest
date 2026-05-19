@@ -1,14 +1,18 @@
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
-// Sequelize Instance (rename to sequelize)
+dotenv.config();
+
+// Sequelize Instance
 const sequelize = new Sequelize(
-  "tutornest",
-  "root",
-  "",
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
   {
-    host: "localhost",
-    dialect: "mysql",
-    logging: false,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
+    dialect: process.env.DB_DIALECT || "mysql",
+    logging: process.env.NODE_ENV === "development" ? false : false,
   }
 );
 

@@ -21,12 +21,16 @@ const PORT = process.env.PORT || 5000;
 // =========================
 // STATIC FILES (UPLOADS)
 // =========================
-app.use("/uploads", express.static("uploads"));
+const uploadDir = process.env.UPLOAD_DIR || "uploads";
+app.use("/uploads", express.static(uploadDir));
 
 // =========================
 // MIDDLEWARES
 // =========================
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -60,7 +64,7 @@ const startServer = async () => {
     }
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
       console.log(`📡 API Base URL: http://localhost:${PORT}${API_PREFIX}`);
     });
   } catch (error) {
