@@ -1,4 +1,4 @@
-import Student from "../models/studentModel.js";
+import { Student } from "../models/index.js";
 import bcrypt from "bcryptjs";
 
 // CREATE STUDENT
