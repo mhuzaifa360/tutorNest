@@ -11,19 +11,19 @@ import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 
-// GET ALL COURSES (public ya logged-in)
+// GET ALL COURSES | Role: Authenticated Users (Student, Teacher, Admin)
 router.get("/getCourses", verifyToken, getCourses);
 
-// GET SINGLE COURSE
+// GET SINGLE COURSE | Role: Authenticated Users (Student, Teacher, Admin)
 router.get("/getSingleCourse/:id", verifyToken, getSingleCourse);
 
-// CREATE COURSE (teacher only)
+// CREATE COURSE | Role: teacher
 router.post("/createCourse",verifyToken,authorizeRoles("teacher"),createCourse);
 
-// UPDATE COURSE (teacher only)
+// UPDATE COURSE | Role: teacher
 router.put("/updateCourse/:id",verifyToken,authorizeRoles("teacher"),updateCourse);
 
-// DELETE COURSE (can delete only the owner teacher)teacher id must match in course
+// DELETE COURSE | Role: teacher (only owner)
 router.delete("/deleteCourse/:id", verifyToken,authorizeRoles("teacher"),deleteCourse);
 
 export default router;

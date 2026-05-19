@@ -16,16 +16,20 @@ const router = express.Router();
 
 
 // =========================
-// STUDENT AUTH
+// STUDENT AUTH (Public)
 // =========================
+// Role: Any (Public)
 router.post("/student/signup", upload.single("profileImage"), signupStudent);
+// Role: Any (Public)
 router.post("/student/login", loginStudent);
 
 
 // =========================
-// TEACHER AUTH
+// TEACHER AUTH (Public)
 // =========================
+// Role: Any (Public)
 router.post("/teacher/signup", upload.single("profileImage"), signupTeacher);
+// Role: Any (Public)
 router.post("/teacher/login", loginTeacher);
 
 

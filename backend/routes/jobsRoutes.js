@@ -4,19 +4,19 @@ import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// CREATE JOB (student only)
+// CREATE JOB | Role: student
 router.post("/createJob",verifyToken,authorizeRoles("student"),createJob);
 
-// GET ALL JOBS
-router.get("/getJobs", verifyToken, getJobs); // only teacher
+// GET ALL JOBS | Role: Authenticated Users (Teacher usually, but not explicitly restricted here)
+router.get("/getJobs", verifyToken, getJobs); 
 
-// GET SINGLE JOB
+// GET SINGLE JOB | Role: Authenticated Users
 router.get("/getSingleJob/:id", verifyToken, getSingleJob); 
 
-// UPDATE JOB
+// UPDATE JOB | Role: student
 router.put("/updateJob/:id",verifyToken,authorizeRoles("student"),  updateJob);
 
-// DELETE JOB
+// DELETE JOB | Role: student
 router.delete("/deleteJob/:id",  verifyToken,authorizeRoles("student"),deleteJob);
 
 export default router;

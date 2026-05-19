@@ -12,20 +12,29 @@ import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/createStudent", createStudent); // CREATE STUDENT
-router.get("/getSingleStudent/:id", verifyToken, getSingleStudent); // GET SINGLE STUDENT
-router.put("/updateStudent/:id", verifyToken, updateStudent); // UPDATE STUDENT
+// CREATE STUDENT | Role: Any (Public)
+router.post("/createStudent", createStudent); 
+
+// GET SINGLE STUDENT | Role: Authenticated Users
+router.get("/getSingleStudent/:id", verifyToken, getSingleStudent); 
+
+// UPDATE STUDENT | Role: Authenticated Users (Self usually)
+router.put("/updateStudent/:id", verifyToken, updateStudent); 
+
+// GET ALL STUDENTS | Role: teacher
 router.get(
   "/getStudents",
   verifyToken,
-  authorizeRoles("teacher"), // optional: teacher only
+  authorizeRoles("teacher"), 
   getStudents,
-); // GET ALL STUDENTS
+); 
+
+// DELETE STUDENT | Role: teacher
 router.delete(
   "/deleteStudent/:id",
   verifyToken,
   authorizeRoles("teacher"),
   deleteStudent,
-); // DELETE STUDENT
+);
 
 export default router;

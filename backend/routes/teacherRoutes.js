@@ -13,10 +13,19 @@ const router = express.Router();
 
 
 
-router.get("/getTeachers",verifyToken,authorizeRoles("admin","teacher"),getTeachers,); // GET ALL TEACHERS
-router.post("/createTeacher", createTeacher); // CREATE TEACHER
-router.get("/getSingleTeacher/:id", verifyToken, getSingleTeacher); // GET SINGLE TEACHER
-router.put("/updateTeacher/:id", verifyToken, authorizeRoles("teacher"), updateTeacher, ); // UPDATE TEACHER
-router.delete("/deleteTeacher/:id",verifyToken,authorizeRoles("teacher","admin"), deleteTeachers,); // DELETE TEACHER
+// GET ALL TEACHERS | Role: admin, teacher
+router.get("/getTeachers",verifyToken,authorizeRoles("admin","teacher"),getTeachers,); 
+
+// CREATE TEACHER | Role: Any (Public)
+router.post("/createTeacher", createTeacher); 
+
+// GET SINGLE TEACHER | Role: Authenticated Users
+router.get("/getSingleTeacher/:id", verifyToken, getSingleTeacher); 
+
+// UPDATE TEACHER | Role: teacher
+router.put("/updateTeacher/:id", verifyToken, authorizeRoles("teacher"), updateTeacher, ); 
+
+// DELETE TEACHER | Role: teacher, admin
+router.delete("/deleteTeacher/:id",verifyToken,authorizeRoles("teacher","admin"), deleteTeachers,);
 
 export default router;
