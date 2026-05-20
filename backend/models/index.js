@@ -1,16 +1,14 @@
-import Teacher from './teacherModel.js';
-import { Course } from './courseModel.js';
-import Student from './studentModel.js';
-import { Enrollment } from './enrollmentModel.js';
-import { Job } from './jobsModel.js';
-import { Application } from './applicationsModel.js';
-import { Review } from './reviewsModel.js';
-import { SavedJob } from './savedJobModel.js';
-import { Notification } from './notificationModel.js';
+import Teacher from "./teacherModel.js";
+import { Course } from "./courseModel.js";
+import Student from "./studentModel.js";
+import { Enrollment } from "./enrollmentModel.js";
+import { Job } from "./jobsModel.js";
+import { Application } from "./applicationsModel.js";
+import { Review } from "./reviewsModel.js";
+import { SavedJob } from "./savedJobModel.js";
+import { Notification } from "./notificationModel.js";
 
-// =========================
 // TEACHER <-> COURSE
-// =========================
 Teacher.hasMany(Course, {
   foreignKey: "teacherId",
   as: "courses",
@@ -21,9 +19,7 @@ Course.belongsTo(Teacher, {
   as: "teacher",
 });
 
-// =========================
-// STUDENT <-> COURSE (Many-to-Many via Enrollment)
-// =========================
+// STUDENT <-> COURSE
 Student.belongsToMany(Course, {
   through: Enrollment,
   foreignKey: "studentId",
@@ -38,9 +34,7 @@ Course.belongsToMany(Student, {
   as: "students",
 });
 
-// =========================
-// STUDENT <-> JOB (One-to-Many)
-// =========================
+// STUDENT <-> JOB
 Student.hasMany(Job, {
   foreignKey: "studentId",
   as: "jobs",
@@ -51,9 +45,7 @@ Job.belongsTo(Student, {
   as: "student",
 });
 
-// =========================
-// JOB <-> APPLICATION (One-to-Many)
-// =========================
+// JOB <-> APPLICATION
 Job.hasMany(Application, {
   foreignKey: "jobId",
   as: "applications",
@@ -64,9 +56,7 @@ Application.belongsTo(Job, {
   as: "job",
 });
 
-// =========================
-// TEACHER <-> APPLICATION (One-to-Many via tutorId)
-// =========================
+// TEACHER <-> APPLICATION
 Teacher.hasMany(Application, {
   foreignKey: "tutorId",
   as: "applications",
@@ -77,9 +67,7 @@ Application.belongsTo(Teacher, {
   as: "tutor",
 });
 
-// =========================
-// STUDENT <-> REVIEW (One-to-Many)
-// =========================
+// STUDENT <-> REVIEW
 Student.hasMany(Review, {
   foreignKey: "studentId",
   as: "reviews",
@@ -90,9 +78,7 @@ Review.belongsTo(Student, {
   as: "student",
 });
 
-// =========================
-// TEACHER <-> REVIEW (One-to-Many)
-// =========================
+// TEACHER <-> REVIEW
 Teacher.hasMany(Review, {
   foreignKey: "teacherId",
   as: "reviews",
@@ -103,9 +89,7 @@ Review.belongsTo(Teacher, {
   as: "teacher",
 });
 
-// =========================
-// STUDENT <-> SAVEDJOB (One-to-Many)
-// =========================
+// STUDENT <-> SAVED JOB
 Student.hasMany(SavedJob, {
   foreignKey: "studentId",
   as: "savedJobs",
@@ -116,9 +100,7 @@ SavedJob.belongsTo(Student, {
   as: "student",
 });
 
-// =========================
-// JOB <-> SAVEDJOB (One-to-Many)
-// =========================
+// JOB <-> SAVED JOB
 Job.hasMany(SavedJob, {
   foreignKey: "jobId",
   as: "savedByStudents",
@@ -129,4 +111,37 @@ SavedJob.belongsTo(Job, {
   as: "job",
 });
 
-export { Teacher, Course, Student, Enrollment, Job, Application, Review, SavedJob, Notification };
+// USER NOTIFICATIONS
+Student.hasMany(Notification, {
+  foreignKey: "userId",
+  as: "notifications",
+});
+
+Teacher.hasMany(Notification, {
+  foreignKey: "userId",
+  as: "notifications",
+});
+
+Notification.belongsTo(Student, {
+  foreignKey: "userId",
+  constraints: false,
+});
+
+Notification.belongsTo(Teacher, {
+  foreignKey: "userId",
+  constraints: false,
+});
+
+
+// EXPORT ALL MODELS
+export {
+  Teacher,
+  Course,
+  Student,
+  Enrollment,
+  Job,
+  Application,
+  Review,
+  SavedJob,
+  Notification,
+};

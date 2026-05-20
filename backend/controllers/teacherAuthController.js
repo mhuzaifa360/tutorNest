@@ -100,9 +100,12 @@ export const loginTeacher = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: teacher.id, email: teacher.email, role: "teacher" },
+      {
+        id: teacher.id,
+        role: "teacher"
+      },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      { expiresIn: "7d" }
     );
 
     return res.status(200).json({

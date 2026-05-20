@@ -51,9 +51,20 @@ export const signupStudent = async (req, res) => {
       profileImage,
     });
 
+    // create JWT token
+    const token = jwt.sign(
+      {
+        id: newStudent.id,
+        role: "student"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     return res.status(201).json({
       success: true,
       message: "Student created successfully",
+      token,
       data: newStudent,
     });
   } catch (error) {
@@ -91,15 +102,14 @@ export const loginStudent = async (req, res) => {
     }
 
     // create JWT token
-   const token = jwt.sign(
-  {
-    id: student.id,
-    email: student.email,
-    role: "student",
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-);
+    const token = jwt.sign(
+      {
+        id: student.id,
+        role: "student"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return res.status(200).json({
       success: true,
