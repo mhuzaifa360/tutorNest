@@ -1,8 +1,6 @@
 import { Enrollment, Course, Student } from '../models/index.js';
 
-// =========================
 // ENROLL STUDENT IN COURSE
-// =========================
 export const enrollStudent = async (req, res) => {
   try {
     const studentId = req.user.id; // from JWT
