@@ -12,7 +12,7 @@ const router = express.Router();
 
 
 // GET ALL COURSES | Role: Authenticated Users (Student, Teacher, Admin)
-router.get("/getCourses", verifyToken, getCourses);
+router.get("/getCourses", verifyToken, authorizeRoles("admin", "teacher", "student"), getCourses);
 
 // GET SINGLE COURSE | Role: Authenticated Users (Student, Teacher, Admin)
 router.get("/getSingleCourse/:id", verifyToken, getSingleCourse);

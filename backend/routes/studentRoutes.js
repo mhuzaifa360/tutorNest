@@ -8,6 +8,8 @@ import {
   deleteStudent,
 } from "../controllers/studentController.js";
 
+import { getMyCourses } from "../controllers/enrollmentController.js";
+
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -35,6 +37,14 @@ router.delete(
   verifyToken,
   authorizeRoles("teacher"),
   deleteStudent,
+);
+
+// GET MY COURSES | Role: student
+router.get(
+  "/my-courses",
+  verifyToken,
+  authorizeRoles("student"),
+  getMyCourses
 );
 
 export default router;
