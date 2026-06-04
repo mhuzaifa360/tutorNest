@@ -1,4 +1,3 @@
-
 import { Route, Routes, useLocation } from "react-router";
 
 import Home from "../pages/Home";
@@ -8,22 +7,31 @@ import Signup from "../pages/Signup";
 import Login from "../pages/Login";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
-import StudentDashboard from "../pages/Dashboard/StudentDashboard";
-import TutorDashboard from "../pages/Dashboard/TutorDashboard";
 import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
+
+import ProtectedRoute from "./ProtectedRoute";
+import RoleRoute from "./RoleRoute";
+
+import StudentLayout from "../components/layout/StudentLayout";
+import TeacherLayout from "../components/layout/TeacherLayout";
+import AdminLayout from "../components/layout/AdminLayout";
+
+// pages
+import StudentDashboard from "../pages/student/StudentDashboard";
+import TeacherDashboard from "../pages/teacher/TeacherDashboard";
+import AdminDashboard from "../pages/admin/AdminDashboard";
 
 function AppRoutes() {
   const location = useLocation();
 
   const hideLayout =
-    location.pathname === "/login" ||
-    location.pathname === "/signup";
+    location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <>
       {/* NAVBAR */}
-       <Navbar />
+      <Navbar />
 
       {/* ROUTES */}
       <Routes>
@@ -34,14 +42,43 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/courses" element={<Courses />} />
+        <Route path="/studentdashboard" element={<StudentDashboard />} />
+        <Route path="/teacherdashboard" element={<TeacherDashboard />} />
+        {/* STUDENT */}
         <Route
-          path="/studentdashboard"
-          element={<StudentDashboard />}
-        />
+          path="/student"
+          element={
+            <RoleRoute role="student">
+              <StudentLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="dashboard" element={<StudentDashboard />} />
+        </Route>
+
+        {/* TEACHER */}
         <Route
-          path="/tutordashboard"
-          element={<TutorDashboard />}
-        />
+          path="/teacher"
+          element={
+            <RoleRoute role="teacher">
+              <TeacherLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="dashboard" element={<TeacherDashboard />} />
+        </Route>
+
+        {/* ADMIN */}
+        <Route
+          path="/admin"
+          element={
+            <RoleRoute role="admin">
+              <AdminLayout />
+            </RoleRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
       </Routes>
 
       {/* FOOTER */}

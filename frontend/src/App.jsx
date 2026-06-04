@@ -1,14 +1,15 @@
-import AppRoutes from './routes/AppRoutes'
-import { BrowserRouter } from 'react-router'
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import MainLayout from "./components/layout/MainLayout";
 
 function App() {
   return (
-    <div >
-      <BrowserRouter>
-       <AppRoutes />
-      </BrowserRouter>
-    </div>
-  )
+    <BrowserRouter>
+      <MainLayout>
+        <AppRoutes />
+      </MainLayout>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
