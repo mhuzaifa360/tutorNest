@@ -1,55 +1,25 @@
-const USERS_KEY = "tutornest_users";
-const CURRENT_USER_KEY = "tutornest_user";
+const TOKEN_KEY = "tutornest_token";
 
-// Get all users
-export const getUsers = () => {
-  return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+// SAVE TOKEN
+export const setToken = (token) => {
+  localStorage.setItem(TOKEN_KEY, token);
 };
 
-// Save users
-export const saveUsers = (users) => {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+// GET TOKEN
+export const getToken = () => {
+  return localStorage.getItem(TOKEN_KEY);
 };
 
-// REGISTER
-export const registerUser = (user) => {
-  const users = getUsers();
+// REMOVE TOKEN
+export const removeToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+};
 
-  const exists = users.find((u) => u.email === user.email);
-
-  if (exists) {
-    return { success: false, message: "User already exists" };
+// DECODE JWT (simple frontend decode)
+export const decodeToken = (token) => {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (err) {
+    return null;
   }
-
-  users.push(user);
-  saveUsers(users);
-
-  return { success: true };
-};
-
-// LOGIN
-export const loginUser = (email, password) => {
-  const users = getUsers();
-
-  const user = users.find(
-    (u) => u.email === email && u.password === password
-  );
-
-  if (!user) {
-    return { success: false, message: "Invalid credentials" };
-  }
-
-  localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-
-  return { success: true, user };
-};
-
-// CURRENT USER
-export const getCurrentUser = () => {
-  return JSON.parse(localStorage.getItem(CURRENT_USER_KEY));
-};
-
-// LOGOUT
-export const logoutUser = () => {
-  localStorage.removeItem(CURRENT_USER_KEY);
 };

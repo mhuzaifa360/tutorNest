@@ -4,7 +4,7 @@ import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import Btn from "../components/common/Btn";
 import Typography from "../components/common/Typography";
-import { registerUser } from "../services/authService";
+// import { registerUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
@@ -28,30 +28,38 @@ const Signup = () => {
     });
   };
 
-  // ✅ SIGNUP SUBMIT (backend-ready structure)
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const newUser = {
-      ...form,
+  const res = await fetch("http://localhost:5000/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: form.name,
+      email: form.email,
+      password: form.password,
       role,
-    };
+    }),
+  });
 
-    const res = registerUser(newUser);
+  const data = await res.json();
 
-    if (!res.success) {
-      alert(res.message);
-      return;
-    }
+  if (!data.success) {
+    alert(data.message);
+    return;
+  }
 
-    // auto login after signup (UX best practice)
-    login(newUser);
+  // auto login after signup
+  setToken(data.token);
+  login(data.token);
 
-    // redirect based on role
-    if (role === "student") navigate("/student/dashboard");
-    else if (role === "teacher") navigate("/teacher/dashboard");
-    else navigate("/admin/dashboard");
-  };
+  const userRole = data.user.role;
+
+  if (userRole === "student") navigate("/student/dashboard");
+  else navigate("/teacher/dashboard");
+};
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center px-4 py-24">

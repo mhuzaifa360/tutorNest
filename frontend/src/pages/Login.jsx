@@ -4,7 +4,7 @@ import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import Btn from "../components/common/Btn";
 import Typography from "../components/common/Typography";
-import { loginUser } from "../services/authService";
+// import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -28,24 +28,40 @@ const Login = () => {
     });
   };
 
-  // ✅ LOGIN SUBMIT (backend ready structure)
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const res = loginUser(form.email, form.password);
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: form.email,
+      password: form.password,
+    }),
+  });
 
-    if (!res.success) {
-      alert(res.message);
-      return;
-    }
+  const data = await res.json();
 
-    login(res.user);
+  if (!data.success) {
+    alert(data.message);
+    return;
+  }
 
-    // role-based redirect
-    if (res.user.role === "student") navigate("/student/dashboard");
-    else if (res.user.role === "teacher") navigate("/teacher/dashboard");
-    else navigate("/admin/dashboard");
-  };
+  // SAVE TOKEN
+  setToken(data.token);
+
+  // UPDATE CONTEXT
+  login(data.token);
+
+  // REDIRECT
+  const role = data.user.role;
+
+  if (role === "student") navigate("/student/dashboard");
+  else if (role === "teacher") navigate("/teacher/dashboard");
+  else navigate("/admin/dashboard");
+};
 
   return (
     <section className="flex-1 flex items-center justify-center px-4 py-24">

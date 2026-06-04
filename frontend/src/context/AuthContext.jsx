@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser, logoutUser } from "../services/authService";
+import { getToken, decodeToken, removeToken } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -7,16 +7,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (currentUser) setUser(currentUser);
+    const token = getToken();
+
+    if (token) {
+      const decoded = decodeToken(token);
+
+      if (decoded) {
+        setUser(decoded); // contains id, role, name
+      }
+    }
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
+  const login = (token) => {
+    const decoded = decodeToken(token);
+    setUser(decoded);
   };
 
   const logout = () => {
-    logoutUser();
+    removeToken();
     setUser(null);
   };
 
