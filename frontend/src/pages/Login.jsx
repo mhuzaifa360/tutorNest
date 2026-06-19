@@ -1,86 +1,119 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import Btn from "../components/common/Btn";
 import Typography from "../components/common/Typography";
-// import { loginUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [role, setRole] = useState("student");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-  const [role, setRole] = useState("student");
-  const [showPassword, setShowPassword] = useState(false);
-
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  // ✅ INPUT HANDLER (backend ready)
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const res = await fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: form.email,
-      password: form.password,
-    }),
-  });
+    try {
+      setLoading(true);
 
-  const data = await res.json();
+      const endpoint =
+        role === "student"
+          ? "http://localhost:5000/v1/auth/student/login"
+          : "http://localhost:5000/v1/auth/teacher/login";
 
-  if (!data.success) {
-    alert(data.message);
-    return;
-  }
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
 
-  // SAVE TOKEN
-  setToken(data.token);
+      const data = await response.json();
 
-  // UPDATE CONTEXT
-  login(data.token);
+      if (!response.ok || !data.success) {
+        alert(data.message || "Login Failed");
+        return;
+      }
 
-  // REDIRECT
-  const role = data.user.role;
+      // Save Auth Data
+      login(data.user, data.token);
 
-  if (role === "student") navigate("/student/dashboard");
-  else if (role === "teacher") navigate("/teacher/dashboard");
-  else navigate("/admin/dashboard");
-};
+      // Backup Storage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect by Role
+      switch (data.user.role?.toLowerCase()) {
+        case "student":
+          navigate("/student/dashboard");
+          break;
+
+        case "teacher":
+          navigate("/teacher/dashboard");
+          break;
+
+        case "admin":
+          navigate("/admin/dashboard");
+          break;
+
+        default:
+          navigate("/");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server Error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <section className="flex-1 flex items-center justify-center px-4 py-24">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 flex flex-col gap-6">
+    <section className="flex-1 flex items-center justify-center px-4 py-24 min-h-screen bg-lightGreyBG dark:bg-slate-950 transition-all duration-300">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl p-8 flex flex-col gap-6 border border-gray-100 dark:border-slate-800">
 
-        {/* TOP CONTENT */}
+        {/* TOP */}
         <div className="flex flex-col gap-2 text-center">
-          <Typography variant="h2" className="font-bold text-heading">
+          <Typography
+            variant="h2"
+            className="font-bold text-textBlack dark:text-white"
+          >
             Welcome Back
           </Typography>
 
-          <Typography variant="body" className="text-muted">
+          <Typography
+            variant="body"
+            className="text-textGrey dark:text-gray-400"
+          >
             Sign in to your TutorNest account
           </Typography>
         </div>
 
-        {/* ROLE SELECT (UI ONLY - backend ready) */}
+        {/* ROLE */}
         <div className="flex flex-col gap-3">
-          <Typography variant="body" className="font-semibold text-heading">
+          <Typography
+            variant="body"
+            className="font-semibold text-textBlack dark:text-white"
+          >
             I am a
           </Typography>
 
@@ -91,7 +124,7 @@ const Login = () => {
               className={`flex-1 h-12 rounded-xl border transition-all duration-300 font-semibold ${
                 role === "student"
                   ? "!bg-primary !text-white border-primary"
-                  : "!bg-white !text-primary border-border"
+                  : "!bg-white dark:!bg-slate-800 !text-primary border-gray-300"
               }`}
             >
               Student
@@ -103,7 +136,7 @@ const Login = () => {
               className={`flex-1 h-12 rounded-xl border transition-all duration-300 font-semibold ${
                 role === "teacher"
                   ? "!bg-primary !text-white border-primary"
-                  : "!bg-white !text-primary border-border"
+                  : "!bg-white dark:!bg-slate-800 !text-primary border-gray-300"
               }`}
             >
               Teacher
@@ -116,60 +149,81 @@ const Login = () => {
 
           {/* EMAIL */}
           <div className="flex flex-col gap-2">
-            <Typography variant="body" className="font-medium text-heading">
+            <Typography
+              variant="body"
+              className="font-medium text-textBlack dark:text-white"
+            >
               Email
             </Typography>
 
             <input
-              name="email"
               type="email"
+              name="email"
               value={form.email}
               onChange={handleChange}
               placeholder="your@email.com"
-              className="w-full h-12 px-4 rounded-xl border border-border outline-none focus:border-primary"
               required
+              className="w-full h-12 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary"
             />
           </div>
 
           {/* PASSWORD */}
           <div className="flex flex-col gap-2">
-            <Typography variant="body" className="font-medium text-heading">
+            <Typography
+              variant="body"
+              className="font-medium text-textBlack dark:text-white"
+            >
               Password
             </Typography>
 
             <div className="relative flex items-center">
               <input
-                name="password"
                 type={showPassword ? "text" : "password"}
+                name="password"
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full h-12 px-4 pr-12 rounded-xl border border-border outline-none focus:border-primary"
                 required
+                className="w-full h-12 px-4 pr-12 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 text-xl text-muted"
+                className="absolute right-4 text-xl text-gray-500"
               >
-                {showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
+                {showPassword ? (
+                  <IoEyeOffOutline />
+                ) : (
+                  <IoEyeOutline />
+                )}
               </button>
             </div>
           </div>
 
-          {/* BUTTON */}
-          <Btn type="submit" className="w-full h-12" variant="blue">
-            Sign In
+          {/* SUBMIT */}
+          <Btn
+            type="submit"
+            variant="blue"
+            className="w-full h-12"
+            disabled={loading}
+          >
+            {loading ? "Signing In..." : "Sign In"}
           </Btn>
         </form>
 
         {/* FOOTER */}
         <div className="text-center">
-          <Typography variant="body" className="text-muted">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="text-primary font-semibold">
-              Sign up
+          <Typography
+            variant="body"
+            className="text-textGrey dark:text-gray-400"
+          >
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign Up
             </Link>
           </Typography>
         </div>
