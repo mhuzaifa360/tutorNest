@@ -1,74 +1,98 @@
-import { useAuth } from "../../context/AuthContext";
-import { FiUsers, FiActivity, FiShield } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import {
+  FiBookOpen,
+  FiBriefcase,
+  FiFileText,
+  FiTrendingUp,
+  FiUsers,
+  FiUserCheck,
+} from "react-icons/fi";
+import StatsCard from "../../components/admin/StatsCard";
+import { adminApi } from "../../services/apiService";
 
-const AdminDashboard = () => {
-  const { user } = useAuth();
-
-  const stats = [
-    {
-      title: "Total Users",
-      value: "1,204",
-      icon: <FiUsers className="text-[28px] text-blue-600 dark:text-blue-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-blue-100 dark:bg-blue-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-    {
-      title: "System Status",
-      value: "Healthy",
-      icon: <FiActivity className="text-[28px] text-emerald-600 dark:text-emerald-400 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-emerald-100 dark:bg-emerald-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-    {
-      title: "Active Admins",
-      value: "3",
-      icon: <FiShield className="text-[28px] text-purple-600 dark:text-purple-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-purple-100 dark:bg-purple-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-  ];
-
+const MiniChart = ({ title, values = [], tone = "bg-blue-600" }) => {
+  const max = Math.max(...values, 1);
   return (
-    <div className="flex flex-col gap-8 animate-fade-in font-inter pb-12">
-      {/* WELCOME HERO SECTION */}
-      <div className="relative overflow-hidden rounded-[24px] shadow-sm group">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 z-0"></div>
-        <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none z-0">
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="absolute right-[-20%] top-[-50%] w-[150%] h-[200%] text-slate-500 fill-current">
-            <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,81.3,-46.3C90.8,-33.5,96.8,-18.1,97.3,-2.6C97.8,12.9,92.8,28.5,83.9,41.9C75,55.3,62.2,66.5,47.9,73.5C33.6,80.5,17.8,83.3,2.4,79.1C-13,74.9,-28,63.7,-42.2,55.5C-56.4,47.3,-69.8,42,-78.9,31.5C-88,21,-92.8,5.3,-91.3,-9.9C-89.8,-25.1,-82,-39.8,-71.2,-50.7C-60.4,-61.6,-46.6,-68.7,-32.9,-75.7C-19.2,-82.7,-5.6,-89.6,8.2,-91.3C22,-93,42.4,-89.6,44.7,-76.4Z" transform="translate(100 100)" />
-          </svg>
-        </div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 md:p-10 lg:p-12 backdrop-blur-sm bg-white/30 dark:bg-slate-900/20">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-              Welcome back, <span className="text-purple-600 dark:text-purple-400">{user?.firstName || "Admin"}!</span> 🛡️
-            </h1>
-            <p className="text-slate-600 dark:text-slate-300 mt-3 text-lg font-medium">
-              System overview and control panel. Everything looks good.
-            </p>
-          </div>
-        </div>
+    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-5 flex items-center justify-between">
+        <h3 className="font-bold text-gray-950 dark:text-white">{title}</h3>
+        <FiTrendingUp className="text-gray-400" />
       </div>
-
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat, idx) => (
-          <div 
-            key={idx} 
-            className={`${stat.bgCard} p-6 rounded-2xl shadow-sm hover:shadow-lg border border-slate-100/50 dark:border-slate-800 flex items-center gap-6 hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer`}
-          >
-            <div className={`p-4 rounded-2xl ${stat.bgIcon} shadow-inner`}>
-              {stat.icon}
-            </div>
-            <div className="flex-1">
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm tracking-wide uppercase">{stat.title}</p>
-              <h3 className="text-3xl font-extrabold text-slate-800 dark:text-white mt-1 tracking-tight">{stat.value}</h3>
-            </div>
+      <div className="flex h-36 items-end gap-3">
+        {values.map((value, index) => (
+          <div key={index} className="flex flex-1 flex-col items-center gap-2">
+            <div
+              className={`w-full rounded-t-lg ${tone} transition-all`}
+              style={{ height: `${Math.max((value / max) * 100, 8)}%` }}
+            />
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{value}</span>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+function AdminDashboard() {
+  const [overview, setOverview] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    adminApi.overview().then((response) => {
+      if (active && response.ok) {
+        setOverview(response.data);
+      }
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const stats = overview?.stats || {};
+  const charts = overview?.charts || {};
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+        <div>
+          <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">Overview</p>
+          <h2 className="mt-1 text-3xl font-bold text-gray-950 dark:text-white">Admin Dashboard</h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Monitor users, marketplace activity, courses, jobs, and moderation queues.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <StatsCard title="Total Users" value={loading ? "..." : stats.totalUsers || 0} icon={<FiUsers />} tone="blue" />
+        <StatsCard title="Students" value={loading ? "..." : stats.students || 0} icon={<FiUserCheck />} tone="emerald" />
+        <StatsCard title="Teachers" value={loading ? "..." : stats.teachers || 0} icon={<FiUsers />} tone="violet" />
+        <StatsCard title="Courses" value={loading ? "..." : stats.courses || 0} icon={<FiBookOpen />} tone="amber" />
+        <StatsCard title="Jobs" value={loading ? "..." : stats.jobs || 0} icon={<FiBriefcase />} tone="rose" />
+        <StatsCard title="Applications" value={loading ? "..." : stats.applications || 0} icon={<FiFileText />} tone="slate" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <MiniChart title="User Growth" values={charts.userGrowth || [0, 0, 0]} tone="bg-blue-600" />
+        <MiniChart title="Jobs Posted" values={charts.jobsPosted || [0, 0, 0]} tone="bg-emerald-600" />
+        <MiniChart title="Course Enrollments" values={charts.courseEnrollments || [0, 0, 0]} tone="bg-violet-600" />
+      </div>
+
+      <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <h3 className="font-bold text-gray-950 dark:text-white">Notifications</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {(overview?.notifications || []).map((item) => (
+            <div key={item.id} className="rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
+              <p className="font-semibold text-gray-950 dark:text-white">{item.title}</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{item.message}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default AdminDashboard;

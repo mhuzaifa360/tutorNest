@@ -43,11 +43,84 @@ const apiRequest = async (url, options = {}) => {
 };
 
 // ==================
+// PROFILE API
+// ==================
+
+export const profileApi = {
+  me: () => apiRequest("/profile/me"),
+
+  update: (body) =>
+    apiRequest("/profile/update", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  changePassword: (body) =>
+    apiRequest("/profile/change-password", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  deleteAccount: () =>
+    apiRequest("/profile/delete-account", {
+      method: "DELETE",
+    }),
+};
+
+// ==================
+// ADMIN API
+// ==================
+
+export const adminApi = {
+  overview: () => apiRequest("/admin/overview"),
+  users: () => apiRequest("/admin/users"),
+  deleteUser: (role, id) =>
+    apiRequest(`/admin/users/${role}/${id}`, { method: "DELETE" }),
+
+  students: () => apiRequest("/admin/students"),
+  teachers: () => apiRequest("/admin/teachers"),
+  setTeacherStatus: (id, status) =>
+    apiRequest(`/admin/teachers/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+
+  courses: () => apiRequest("/admin/courses"),
+  updateCourse: (id, body) =>
+    apiRequest(`/admin/courses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  deleteCourse: (id) =>
+    apiRequest(`/admin/courses/${id}`, { method: "DELETE" }),
+
+  jobs: () => apiRequest("/admin/jobs"),
+  updateJob: (id, body) =>
+    apiRequest(`/admin/jobs/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  deleteJob: (id) => apiRequest(`/admin/jobs/${id}`, { method: "DELETE" }),
+
+  applications: () => apiRequest("/admin/applications"),
+  updateApplication: (id, status) =>
+    apiRequest(`/admin/applications/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+
+  reviews: () => apiRequest("/admin/reviews"),
+  deleteReview: (id) =>
+    apiRequest(`/admin/reviews/${id}`, { method: "DELETE" }),
+};
+
+// ==================
 // STUDENT API
 // ==================
 
 export const studentApi = {
   getProfile: (id) => apiRequest(`/students/getSingleStudent/${id}`),
+  overview: () => apiRequest("/student/overview"),
 
   updateProfile: (id, body) =>
     apiRequest(`/students/updateStudent/${id}`, {
@@ -61,6 +134,72 @@ export const studentApi = {
     apiRequest(`/students/deleteStudent/${id}`, { method: "DELETE" }),
 
   getMyCourses: () => apiRequest("/students/my-courses"),
+
+  findTeachers: (params = {}) => {
+    const query = new URLSearchParams(
+      Object.entries(params).filter(([, value]) => value !== "" && value !== null && value !== undefined)
+    ).toString();
+    return apiRequest(`/teachers${query ? `?${query}` : ""}`);
+  },
+
+  getTeacher: (id) => apiRequest(`/teachers/${id}`),
+  savedTeachers: () => apiRequest("/student/saved-teachers"),
+  saveTeacher: (teacherId) =>
+    apiRequest("/student/saved-teachers", {
+      method: "POST",
+      body: JSON.stringify({ teacherId }),
+    }),
+  removeSavedTeacher: (teacherId) =>
+    apiRequest(`/student/saved-teachers/${teacherId}`, { method: "DELETE" }),
+
+  courses: () => apiRequest("/courses/getCourses"),
+  enroll: (courseId) =>
+    apiRequest("/enrollments/enroll", {
+      method: "POST",
+      body: JSON.stringify({ courseId }),
+    }),
+  enrolledCourses: () => apiRequest("/enrollments/my-courses"),
+
+  jobs: () => apiRequest("/student/jobs"),
+  createJob: (body) =>
+    apiRequest("/jobs/createJob", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateJob: (id, body) =>
+    apiRequest(`/jobs/updateJob/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  deleteJob: (id) => apiRequest(`/jobs/deleteJob/${id}`, { method: "DELETE" }),
+
+  applications: () => apiRequest("/student/applications"),
+  updateApplication: (id, status) =>
+    apiRequest(`/student/applications/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+
+  conversations: () => apiRequest("/student/conversations"),
+  messages: (role, id) => apiRequest(`/student/messages/${role}/${id}`),
+  sendMessage: (body) =>
+    apiRequest("/student/messages", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  notifications: () => apiRequest("/notifications/getNotifications"),
+  markNotificationRead: (id) =>
+    apiRequest(`/notifications/markAsRead/${id}`, { method: "PUT" }),
+  deleteNotification: (id) =>
+    apiRequest(`/notifications/deleteNotification/${id}`, { method: "DELETE" }),
+
+  reviews: () => apiRequest("/reviews/getReviews"),
+  createReview: (body) =>
+    apiRequest("/reviews/createReview", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
 
 // ==================

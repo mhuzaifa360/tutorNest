@@ -28,6 +28,8 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
+export const requireAuth = verifyToken;
+
 // ROLE CHECK (AUTHORIZATION)
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
@@ -57,4 +59,6 @@ export const authorizeRoles = (...allowedRoles) => {
     }
   };
 };
+
+export const requireAdmin = authorizeRoles("admin");
 

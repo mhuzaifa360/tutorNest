@@ -2,7 +2,6 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { FiHome, FiBook, FiMessageSquare, FiLogOut, FiSettings, FiMenu } from "react-icons/fi";
 import { useState } from "react";
-import Navbar from "./Navbar";
 
 const StudentLayout = () => {
   const { user, logout } = useAuth();

@@ -6,7 +6,9 @@ import { Job } from "./jobsModel.js";
 import { Application } from "./applicationsModel.js";
 import { Review } from "./reviewsModel.js";
 import { SavedJob } from "./savedJobModel.js";
+import { SavedTeacher } from "./savedTeacherModel.js";
 import { Notification } from "./notificationModel.js";
+import { Message } from "./messageModel.js";
 
 // TEACHER <-> COURSE
 Teacher.hasMany(Course, {
@@ -111,6 +113,27 @@ SavedJob.belongsTo(Job, {
   as: "job",
 });
 
+// STUDENT <-> SAVED TEACHER
+Student.hasMany(SavedTeacher, {
+  foreignKey: "studentId",
+  as: "savedTeachers",
+});
+
+SavedTeacher.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+Teacher.hasMany(SavedTeacher, {
+  foreignKey: "teacherId",
+  as: "savedByStudents",
+});
+
+SavedTeacher.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
 // USER NOTIFICATIONS
 Student.hasMany(Notification, {
   foreignKey: "userId",
@@ -143,5 +166,7 @@ export {
   Application,
   Review,
   SavedJob,
+  SavedTeacher,
   Notification,
+  Message,
 };

@@ -6,16 +6,16 @@ import Btn from "../common/Btn";
 
 function FeaturedTutors() {
   return (
-    <section className="w-full py-16 bg-lightGreyBG">
+    <section className="w-full py-16 bg-lightGreyBG dark:bg-slate-950 transition-colors duration-300">
       {/* CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
         {/* TITLE */}
         <div className="text-center mb-5">
-          <Typography variant="h2" className="font-bold text-textBlack">
+          <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
             Featured Tutors
           </Typography>
 
-          <Typography variant="h4" className="text-textGrey mt-3">
+          <Typography variant="h4" className="text-textGrey dark:text-gray-400 mt-3">
             Learn from our top-rated educators with years of teaching experience
           </Typography>
         </div>
@@ -27,10 +27,14 @@ function FeaturedTutors() {
               key={index}
               className="
                 bg-white
+                dark:bg-slate-900
                 rounded-2xl
                 p-6
                 shadow-sm
                 hover:shadow-lg
+                border
+                border-transparent
+                dark:border-slate-800
                 transition-all
                 duration-300
                 flex flex-col
@@ -44,7 +48,7 @@ function FeaturedTutors() {
               </div>
 
               {/* NAME */}
-              <Typography variant="h4" className="font-semibold text-textBlack">
+              <Typography variant="h4" className="font-semibold text-textBlack dark:text-white">
                 {tutor.name}
               </Typography>
 
@@ -53,7 +57,7 @@ function FeaturedTutors() {
                 {tutor.subjects.map((sub, i) => (
                   <span
                     key={i}
-                    className="text-xs bg-lightGreyBG px-2 py-1 rounded-full text-textGrey"
+                    className="text-xs bg-lightGreyBG dark:bg-slate-800 px-2 py-1 rounded-full text-textGrey dark:text-gray-300"
                   >
                     {sub}
                   </span>
@@ -61,12 +65,12 @@ function FeaturedTutors() {
               </div>
 
               {/* RATING */}
-              <Typography className="text-textGrey">
+              <Typography className="text-textGrey dark:text-gray-400">
                 ⭐ {tutor.rating} ({tutor.reviews})
               </Typography>
 
               {/* PRICE */}
-              <Typography className="font-semibold text-textBlack">
+              <Typography className="font-semibold text-textBlack dark:text-white">
                 ${tutor.price}/hour
               </Typography>
 

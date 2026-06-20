@@ -7,7 +7,7 @@ import heroImg from "../../assets/images/home/hero.png";
 
 function Hero() {
   return (
-    <section className="w-full bg-lightGreyBG py-20">
+    <section className="w-full bg-lightGreyBG dark:bg-slate-950 py-20 transition-colors duration-300">
       {/* MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
         {/* FLEX WRAPPER */}
@@ -17,12 +17,12 @@ function Hero() {
           <div className="w-full lg:w-1/2 flex flex-col gap-6 text-center lg:text-left">
             <Typography
               variant="h1"
-              className="font-bold text-textBlack leading-tight"
+              className="font-bold text-textBlack dark:text-white leading-tight"
             >
               Find Your Perfect Tutor, Learn at Your Pace
             </Typography>
 
-            <Typography variant="h3" className="text-textGrey leading-relaxed">
+            <Typography variant="h3" className="text-textGrey dark:text-gray-400 leading-relaxed">
               Connect with verified expert tutors for personalized online
               learning. Achieve your academic goals with flexible scheduling and
               one-on-one support.

@@ -15,8 +15,11 @@ import savedJobRoutes from "./routes/savedJobRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminAnalyticsRoutes from "./routes/adminAnalyticsRoutes.js";
+import adminManagementRoutes from "./routes/adminManagementRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
 import recommendRoutes from "./routes/recommendTeacherRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
+import studentModuleRoutes from "./routes/studentModuleRoutes.js";
 
 // DB CONNECTION
 import { connectDB, sequelize } from "./config/database.js";
@@ -55,8 +58,11 @@ app.use(`${API_PREFIX}/savedJobs`, savedJobRoutes); // saved job routes
 app.use(`${API_PREFIX}/notifications`, notificationRoutes); // notification routes
 app.use(`${API_PREFIX}/admin`, adminRoutes); // admin routes
 app.use(`${API_PREFIX}/admin`, adminAnalyticsRoutes);// admin analytics routes
+app.use(`${API_PREFIX}/admin`, adminManagementRoutes); // admin management routes
 app.use(`${API_PREFIX}/search`, searchRoutes); // search routes
 app.use(`${API_PREFIX}/recommend`, recommendRoutes); // recommendation routes
+app.use(`${API_PREFIX}/profile`, profileRoutes); // profile routes
+app.use(`${API_PREFIX}/student`, studentModuleRoutes); // student module routes
  
 // HEALTH CHECK
 app.get("/", (req, res) => {

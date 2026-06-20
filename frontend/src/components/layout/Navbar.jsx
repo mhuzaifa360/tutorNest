@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FiMenu, FiX, FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FiEdit3, FiLogOut, FiMenu, FiSettings, FiUser, FiX } from "react-icons/fi";
 
 import ThemeToggle from "../common/ThemeToggle";
 import { useAuth } from "../../context/AuthContext";
 
 function Navbar({ isDashboard }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -17,7 +18,8 @@ function Navbar({ isDashboard }) {
       { name: "Home", path: "/" },
       { name: "Teachers", path: "/teachers" },
       { name: "Courses", path: "/courses" },
-      { name: "Jobs", path: "/jobs" },
+      { name: "About", path: "/about" },
+      { name: "Contact", path: "/contact" },
     ],
     student: [],
     teacher: [],
@@ -26,8 +28,6 @@ function Navbar({ isDashboard }) {
 
   // If dashboard, links are inside sidebar. We don't need top links.
   const links = isDashboard ? [] : navItems["guest"];
-  const role = user?.role || "guest";
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -41,6 +41,12 @@ function Navbar({ isDashboard }) {
 
   const handleSidebarToggle = () => {
     window.dispatchEvent(new Event("toggle-sidebar"));
+  };
+
+  const handleLogout = () => {
+    setIsDropdownOpen(false);
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -120,7 +126,7 @@ function Navbar({ isDashboard }) {
 
               {/* DROPDOWN MENU */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 py-2 overflow-hidden animate-fade-in origin-top-right">
+                <div className="absolute right-0 mt-3 w-[min(18rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-lg border border-gray-100 bg-white py-2 shadow-xl transition-all duration-200 animate-fade-in dark:border-slate-700 dark:bg-slate-800">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 mb-1">
                     <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
                       {user.firstName} {user.lastName}
@@ -131,15 +137,23 @@ function Navbar({ isDashboard }) {
                   </div>
                   
                   <Link 
-                    to={`/${role}/profile`} 
+                    to="/profile" 
                     onClick={() => setIsDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    <FiUser className="text-gray-400" /> Profile
+                    <FiUser className="text-gray-400" /> View Profile
+                  </Link>
+
+                  <Link
+                    to="/profile/edit"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <FiEdit3 className="text-gray-400" /> Edit Profile
                   </Link>
                   
                   <Link 
-                    to={`/${role}/settings`} 
+                    to="/settings" 
                     onClick={() => setIsDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
@@ -149,10 +163,7 @@ function Navbar({ isDashboard }) {
                   <div className="h-px bg-gray-100 dark:bg-slate-700 my-1"></div>
 
                   <button 
-                    onClick={() => {
-                      setIsDropdownOpen(false);
-                      logout();
-                    }}
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                   >
                     <FiLogOut /> Logout

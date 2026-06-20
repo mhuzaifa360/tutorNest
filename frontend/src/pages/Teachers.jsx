@@ -21,15 +21,15 @@ function Teachers() {
   });
 
   return (
-    <section className="w-full py-20 bg-lightGreyBG">
+    <section className="w-full py-20 bg-lightGreyBG dark:bg-slate-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
         {/* TITLE */}
         <div className="text-center mb-10">
-          <Typography variant="h2" className="font-bold">
+          <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
             Find Your Perfect Tutor
           </Typography>
 
-          <Typography className="text-textGrey mt-2">
+          <Typography className="text-textGrey dark:text-gray-400 mt-2">
             Browse our verified tutors and find the perfect match for your
             learning needs
           </Typography>
@@ -41,13 +41,13 @@ function Teachers() {
           <input
             type="text"
             placeholder="Search tutors..."
-            className="w-full md:w-1/2 p-3 rounded-xl border outline-none"
+            className="w-full md:w-1/2 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white placeholder:text-gray-400 outline-none transition-colors"
             onChange={(e) => setSearch(e.target.value)}
           />
 
           {/* SUBJECT */}
           <select
-            className="w-full md:w-1/4 p-3 rounded-xl border"
+            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
             onChange={(e) => setSubject(e.target.value)}
           >
             <option>All</option>
@@ -62,7 +62,7 @@ function Teachers() {
 
           {/* PRICE */}
           <select
-            className="w-full md:w-1/4 p-3 rounded-xl border"
+            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
             onChange={(e) => setPrice(e.target.value)}
           >
             <option value="All">All Prices</option>
@@ -72,14 +72,14 @@ function Teachers() {
         </div>
 
         {/* RESULTS */}
-        <p className="text-textGrey mb-6">{filtered.length} tutors found</p>
+        <p className="text-textGrey dark:text-gray-400 mb-6">{filtered.length} tutors found</p>
 
         {/* CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filtered.map((t) => (
             <div
               key={t.id}
-              className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition flex flex-col gap-3 items-center"
+              className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm hover:shadow-lg transition flex flex-col gap-3 items-center border border-transparent dark:border-slate-800"
             >
               {/* INITIALS */}
               <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full font-bold">
@@ -87,14 +87,14 @@ function Teachers() {
               </div>
 
               {/* NAME */}
-              <Typography className="font-semibold">{t.name}</Typography>
+              <Typography className="font-semibold text-textBlack dark:text-white">{t.name}</Typography>
 
               {/* SUBJECTS */}
               <div className="flex flex-wrap gap-2">
                 {t.subjects.map((s, i) => (
                   <span
                     key={i}
-                    className="text-xs bg-lightGreyBG px-2 py-1 rounded-full"
+                    className="text-xs bg-lightGreyBG dark:bg-slate-800 text-textGrey dark:text-gray-300 px-2 py-1 rounded-full"
                   >
                     {s}
                   </span>
@@ -102,12 +102,12 @@ function Teachers() {
               </div>
 
               {/* RATING */}
-              <Typography className="text-textGrey">
+              <Typography className="text-textGrey dark:text-gray-400">
                 ⭐ {t.rating} ({t.reviews})
               </Typography>
 
               {/* PRICE */}
-              <Typography className="font-semibold">${t.price}/hour</Typography>
+              <Typography className="font-semibold text-textBlack dark:text-white">${t.price}/hour</Typography>
 
               {/* BUTTON */}
               <Btn variant="blue">

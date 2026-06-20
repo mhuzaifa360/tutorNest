@@ -1,6 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import { FiUsers, FiDollarSign, FiStar, FiArrowRight } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiUsers, FiDollarSign, FiStar } from "react-icons/fi";
 
 const TeacherDashboard = () => {
   const { user } = useAuth();

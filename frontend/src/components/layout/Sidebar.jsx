@@ -1,6 +1,21 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { FiHome, FiBook, FiMessageSquare, FiLogOut, FiSettings, FiUsers, FiDollarSign } from "react-icons/fi";
+import {
+  FiBell,
+  FiBookmark,
+  FiBriefcase,
+  FiClipboard,
+  FiDollarSign,
+  FiHome,
+  FiLogOut,
+  FiMessageSquare,
+  FiSearch,
+  FiSettings,
+  FiStar,
+  FiUser,
+  FiUsers,
+  FiBook,
+} from "react-icons/fi";
 import { useState, useEffect } from "react";
 
 const Sidebar = () => {
@@ -31,8 +46,16 @@ const Sidebar = () => {
     // Default to student
     return [
       { name: "Dashboard", path: "/student/dashboard", icon: <FiHome /> },
-      { name: "My Courses", path: "/student/courses", icon: <FiBook /> },
-      { name: "Messages", path: "/messages", icon: <FiMessageSquare /> },
+      { name: "Find Tutors", path: "/student/tutors", icon: <FiSearch /> },
+      { name: "Saved Tutors", path: "/student/saved-tutors", icon: <FiBookmark /> },
+      { name: "Courses", path: "/student/courses", icon: <FiBook /> },
+      { name: "My Courses", path: "/student/my-courses", icon: <FiClipboard /> },
+      { name: "Tuition Jobs", path: "/student/jobs", icon: <FiBriefcase /> },
+      { name: "Applications", path: "/student/applications", icon: <FiUsers /> },
+      { name: "Messages", path: "/student/messages", icon: <FiMessageSquare /> },
+      { name: "Notifications", path: "/student/notifications", icon: <FiBell /> },
+      { name: "Reviews", path: "/student/reviews", icon: <FiStar /> },
+      { name: "Profile", path: "/student/profile", icon: <FiUser /> },
       { name: "Settings", path: "/student/settings", icon: <FiSettings /> },
     ];
   };

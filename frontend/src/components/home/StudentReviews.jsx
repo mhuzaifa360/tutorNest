@@ -6,16 +6,16 @@ import { reviews } from "../../assets/constant/reviews";
 
 function StudentReviews() {
   return (
-    <section className="w-full py-16 bg-white">
+    <section className="w-full py-16 bg-white dark:bg-slate-900 transition-colors duration-300">
       {/* CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
         {/* TITLE */}
         <div className="text-center mb-12">
-          <Typography variant="h2" className="font-bold text-textBlack">
+          <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
             What Our Students Say
           </Typography>
 
-          <Typography variant="p" className="text-textGrey mt-3">
+          <Typography variant="p" className="text-textGrey dark:text-gray-400 mt-3">
             Real success stories from students who achieved their goals with
             TutorNest
           </Typography>
@@ -28,6 +28,7 @@ function StudentReviews() {
               key={index}
               className="
                 bg-lightGreyBG
+                dark:bg-slate-800
                 p-6
                 rounded-2xl
                 shadow-sm
@@ -48,7 +49,7 @@ function StudentReviews() {
               </div>
 
               {/* TEXT */}
-              <Typography className="text-textGrey leading-relaxed" variant="p">
+              <Typography className="text-textGrey dark:text-gray-300 leading-relaxed" variant="p">
                 "{item.text}"
               </Typography>
 
@@ -59,11 +60,11 @@ function StudentReviews() {
                 </div>
 
                 <div>
-                  <Typography className="font-semibold text-textBlack">
+                  <Typography className="font-semibold text-textBlack dark:text-white">
                     {item.name}
                   </Typography>
 
-                  <Typography className="text-sm text-textGrey">
+                  <Typography className="text-sm text-textGrey dark:text-gray-400">
                     {item.role}
                   </Typography>
                 </div>

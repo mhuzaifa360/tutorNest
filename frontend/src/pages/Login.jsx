@@ -39,7 +39,9 @@ const Login = () => {
       const endpoint =
         role === "student"
           ? "http://localhost:5000/v1/auth/student/login"
-          : "http://localhost:5000/v1/auth/teacher/login";
+          : role === "teacher"
+            ? "http://localhost:5000/v1/auth/teacher/login"
+            : "http://localhost:5000/v1/auth/login";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -49,6 +51,7 @@ const Login = () => {
         body: JSON.stringify({
           email: form.email,
           password: form.password,
+          role,
         }),
       });
 
@@ -149,6 +152,18 @@ const Login = () => {
               }`}
             >
               Teacher
+            </Btn>
+
+            <Btn
+              type="button"
+              onClick={() => setRole("admin")}
+              className={`flex-1 h-12 rounded-xl border transition-all duration-300 font-semibold ${
+                role === "admin"
+                  ? "!bg-primary !text-white border-primary"
+                  : "!bg-white dark:!bg-slate-800 !text-primary border-gray-300"
+              }`}
+            >
+              Admin
             </Btn>
           </div>
         </div>

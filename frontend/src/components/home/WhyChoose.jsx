@@ -4,16 +4,16 @@ import { features } from "../../assets/constant/features";
 
 function WhyChoose() {
   return (
-    <section className="w-full py-16 bg-white">
+    <section className="w-full py-16 bg-white dark:bg-slate-900 transition-colors duration-300">
       {/* MAIN CONTAINER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
         {/* TITLE */}
         <div className="text-center mb-12">
-          <Typography variant="h2" className="font-bold text-textBlack">
+          <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
             Why Choose TutorNest?
           </Typography>
 
-          <Typography variant="h4" className="text-textGrey mt-4">
+          <Typography variant="h4" className="text-textGrey dark:text-gray-400 mt-4">
             Everything you need for a smooth and effective learning experience
           </Typography>
         </div>
@@ -28,6 +28,7 @@ function WhyChoose() {
                 key={index}
                 className="
                   bg-lightGreyBG
+                  dark:bg-slate-800
                   rounded-2xl
                   p-6
                   flex flex-col
@@ -39,14 +40,14 @@ function WhyChoose() {
                 "
               >
                 {/* ICON */}
-                <div className="text-primary text-5xl">
+              <div className="text-primary dark:text-blue-400 text-5xl">
                   <Icon />
                 </div>
 
                 {/* TITLE */}
                 <Typography
                   variant="h4"
-                  className="font-semibold text-textBlack"
+                  className="font-semibold text-textBlack dark:text-white"
                 >
                   {item.title}
                 </Typography>
@@ -54,7 +55,7 @@ function WhyChoose() {
                 {/* DESC */}
                 <Typography
                   variant="body"
-                  className="text-textGrey leading-relaxed"
+                  className="text-textGrey dark:text-gray-400 leading-relaxed"
                 >
                   {item.desc}
                 </Typography>

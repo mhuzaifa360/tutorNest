@@ -7,20 +7,20 @@ function AppLayout({ children }) {
   const location = useLocation();
 
   // Check if current route is a dashboard route
-  const isDashboard = 
-    location.pathname.startsWith("/student") || 
-    location.pathname.startsWith("/teacher") || 
-    location.pathname.startsWith("/admin");
+  const isDashboard = /^\/student(\/|$)/.test(location.pathname) || /^\/teacher\/dashboard(\/|$)/.test(
+    location.pathname
+  );
+  const isAdminArea = /^\/admin(\/|$)/.test(location.pathname);
 
   const hideLayout =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" || location.pathname === "/signup" || isAdminArea;
 
   if (hideLayout) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-slate-950 font-inter overflow-hidden">
+    <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-gray-900 dark:text-white font-inter overflow-hidden transition-colors duration-300">
       {/* Sidebar (Only visible on dashboard routes) */}
       {isDashboard && <Sidebar />}
 

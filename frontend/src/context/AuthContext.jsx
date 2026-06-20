@@ -1,5 +1,5 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components, react-hooks/set-state-in-effect */
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
   getToken,
   getUser,
@@ -8,6 +8,7 @@ import {
   clearAuth,
   decodeToken,
 } from "../services/authService";
+import { profileApi } from "../services/apiService";
 
 const AuthContext = createContext();
 
@@ -64,15 +65,31 @@ const getInitialUser = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUserState] = useState(getInitialUser);
 
-  // When user changes, ensure we have initials
-  useEffect(() => {
-    if (user && !user.initials) {
-      setUserState(prev => ({
-        ...prev,
-        initials: getInitials(prev?.firstName, prev?.lastName)
-      }));
+  const updateUser = useCallback((userData) => {
+    if (!userData) return;
+    const nextUser = {
+      ...userData,
+      initials: getInitials(userData.firstName, userData.lastName),
+    };
+    setUser(nextUser);
+    setUserState(nextUser);
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    const token = getToken();
+    if (!token) return null;
+
+    const response = await profileApi.me();
+    if (response.ok && response.user) {
+      updateUser(response.user);
+      return response.user;
     }
-  }, [user]);
+    return null;
+  }, [updateUser]);
+
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
 
   /**
    * Login: saves token + user to localStorage and updates state.
@@ -85,9 +102,7 @@ export const AuthProvider = ({ children }) => {
         setToken(token);
       }
       if (userData) {
-        userData.initials = getInitials(userData.firstName, userData.lastName);
-        setUser(userData);
-        setUserState(userData);
+        updateUser(userData);
       }
     } catch (err) {
       console.error("Login save error:", err);
@@ -103,7 +118,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

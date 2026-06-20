@@ -9,8 +9,12 @@ import {
 // import token and authentication
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 import { rankedTeachers } from "../utils/rankTeacher.js";
+import { browseTeachers, getTeacherDetail } from "../controllers/studentModuleController.js";
 // define routes
 const router = express.Router();
+
+// CANONICAL TEACHER BROWSE ROUTES | Role: authenticated users
+router.get("/", verifyToken, browseTeachers);
 
 
 
@@ -31,4 +35,7 @@ router.delete("/deleteTeacher/:id",verifyToken,authorizeRoles("teacher","admin")
 
 // RANKED TEACHERS | Role: Any (Public)
 router.get("/ranked", rankedTeachers);
+
+// CANONICAL TEACHER DETAIL ROUTE | Role: authenticated users
+router.get("/:id", verifyToken, getTeacherDetail);
 export default router;
