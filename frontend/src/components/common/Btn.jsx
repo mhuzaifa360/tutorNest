@@ -1,5 +1,3 @@
-
-
 function Btn({
   variant = "blue",
   children,
@@ -9,17 +7,25 @@ function Btn({
 
   const variantStyle = {
     blue: `
-      bg-blueBG 
-      text-textWhite 
-      hover:opacity-90
+      bg-blue-600 dark:bg-blue-600
+      text-white 
+      hover:bg-blue-700 dark:hover:bg-blue-700
+      shadow-sm hover:shadow-md
     `,
 
     white: `
-      bg-secondary 
-      text-textBlack 
-      hover:bg-lightGreyBG
-      border border-gray-200
+      bg-white dark:bg-slate-800
+      text-gray-900 dark:text-white
+      hover:bg-gray-50 dark:hover:bg-slate-700
+      border border-gray-200 dark:border-slate-700
+      shadow-sm hover:shadow-md
     `,
+    
+    ghost: `
+      bg-transparent
+      text-gray-700 dark:text-gray-300
+      hover:bg-gray-100 dark:hover:bg-slate-800
+    `
   };
 
   const baseStyle = `
@@ -27,20 +33,21 @@ function Btn({
     text-sm
     px-6
     min-h-10
-    rounded-lg
+    rounded-xl
     whitespace-nowrap
     flex
     justify-center
     items-center
     transition-all
-    duration-200
+    duration-300
     active:scale-95
     disabled:opacity-50
+    disabled:pointer-events-none
   `;
 
   return (
     <button
-      className={`${baseStyle} ${variantStyle[variant]} ${className}`}
+      className={`${baseStyle} ${variantStyle[variant] || variantStyle.blue} ${className}`}
       {...props}
     >
       {children}
