@@ -10,7 +10,6 @@ import Footer from "../components/layout/Footer";
 import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
 
-import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 
 import StudentLayout from "../components/layout/StudentLayout";

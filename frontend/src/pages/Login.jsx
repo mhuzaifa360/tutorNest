@@ -13,6 +13,7 @@ const Login = () => {
   const [role, setRole] = useState("student");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     email: "",
@@ -24,10 +25,13 @@ const Login = () => {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+    // Clear error when user types
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       setLoading(true);
@@ -48,40 +52,45 @@ const Login = () => {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        setError("Server returned an invalid response");
+        return;
+      }
 
       if (!response.ok || !data.success) {
-        alert(data.message || "Login Failed");
+        setError(data.message || "Login Failed");
+        return;
+      }
+
+      if (!data.token || !data.user) {
+        setError("Invalid response from server");
         return;
       }
 
       // Save Auth Data
       login(data.user, data.token);
 
-      // Backup Storage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
       // Redirect by Role
-      switch (data.user.role?.toLowerCase()) {
+      const userRole = data.user.role?.toLowerCase();
+      switch (userRole) {
         case "student":
           navigate("/student/dashboard");
           break;
-
         case "teacher":
           navigate("/teacher/dashboard");
           break;
-
         case "admin":
           navigate("/admin/dashboard");
           break;
-
         default:
           navigate("/");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Server Error");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Unable to connect to server. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -101,7 +110,7 @@ const Login = () => {
           </Typography>
 
           <Typography
-            variant="body"
+            variant="h6"
             className="text-textGrey dark:text-gray-400"
           >
             Sign in to your TutorNest account
@@ -111,7 +120,7 @@ const Login = () => {
         {/* ROLE */}
         <div className="flex flex-col gap-3">
           <Typography
-            variant="body"
+            variant="h6"
             className="font-semibold text-textBlack dark:text-white"
           >
             I am a
@@ -144,13 +153,20 @@ const Login = () => {
           </div>
         </div>
 
+        {/* ERROR MESSAGE */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-xl">
+            {error}
+          </div>
+        )}
+
         {/* FORM */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
           {/* EMAIL */}
           <div className="flex flex-col gap-2">
             <Typography
-              variant="body"
+              variant="h6"
               className="font-medium text-textBlack dark:text-white"
             >
               Email
@@ -159,18 +175,19 @@ const Login = () => {
             <input
               type="email"
               name="email"
+              id="login-email"
               value={form.email}
               onChange={handleChange}
               placeholder="your@email.com"
               required
-              className="w-full h-12 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary"
+              className="w-full h-12 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary transition-colors"
             />
           </div>
 
           {/* PASSWORD */}
           <div className="flex flex-col gap-2">
             <Typography
-              variant="body"
+              variant="h6"
               className="font-medium text-textBlack dark:text-white"
             >
               Password
@@ -180,11 +197,12 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
+                id="login-password"
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="w-full h-12 px-4 pr-12 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary"
+                className="w-full h-12 px-4 pr-12 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary transition-colors"
               />
 
               <button
@@ -215,7 +233,7 @@ const Login = () => {
         {/* FOOTER */}
         <div className="text-center">
           <Typography
-            variant="body"
+            variant="h6"
             className="text-textGrey dark:text-gray-400"
           >
             Don't have an account?{" "}
