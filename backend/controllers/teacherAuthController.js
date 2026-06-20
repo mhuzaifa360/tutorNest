@@ -26,17 +26,10 @@ export const signupTeacher = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !mobile || !province || !city || !gender || !subjects || experience === undefined || !qualification || !teachingMode || hourlyFee === undefined || !cnic) {
       return res.status(400).json({
         success: false,
-        message: "First name, last name, email and password are required",
-      });
-    }
-
-    if (!cnic) {
-      return res.status(400).json({
-        success: false,
-        message: "CNIC is required",
+        message: "All required fields must be provided",
       });
     }
 
@@ -103,7 +96,8 @@ export const signupTeacher = async (req, res) => {
       {
         id: newTeacher.id,
         role: "teacher",
-        email: newTeacher.email,
+        firstName: newTeacher.firstName,
+        lastName: newTeacher.lastName,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
@@ -125,7 +119,7 @@ export const signupTeacher = async (req, res) => {
     console.error("Teacher Signup Error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Teacher signup failed",
+      message: error.errors ? error.errors[0].message : "Teacher signup failed",
       error: error.message,
     });
   }
@@ -169,7 +163,8 @@ export const loginTeacher = async (req, res) => {
       {
         id: teacher.id,
         role: "teacher",
-        email: teacher.email,
+        firstName: teacher.firstName,
+        lastName: teacher.lastName,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }

@@ -1,3 +1,5 @@
+import { jwtDecode } from "jwt-decode";
+
 const TOKEN_KEY = "tutornest_token";
 const USER_KEY = "tutornest_user";
 
@@ -55,11 +57,7 @@ export const getUser = () => {
 export const decodeToken = (token) => {
   try {
     if (!token || typeof token !== "string") return null;
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payload = parts[1];
-    const decoded = JSON.parse(atob(payload));
-    return decoded;
+    return jwtDecode(token);
   } catch {
     return null;
   }

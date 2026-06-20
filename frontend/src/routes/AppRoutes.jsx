@@ -1,38 +1,32 @@
-import { Route, Routes, useLocation } from "react-router";
+import { Route, Routes } from "react-router";
+import { Outlet } from "react-router-dom";
 
 import Home from "../pages/Home";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import Signup from "../pages/Signup";
 import Login from "../pages/Login";
-import Navbar from "../components/layout/Navbar";
-import Footer from "../components/layout/Footer";
 import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
 
 import RoleRoute from "./RoleRoute";
-
-import StudentLayout from "../components/layout/StudentLayout";
-import TeacherLayout from "../components/layout/TeacherLayout";
-import AdminLayout from "../components/layout/AdminLayout";
+import AppLayout from "../components/layout/AppLayout";
 
 // pages
 import StudentDashboard from "../pages/student/StudentDashboard";
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
+// Simple wrapper for nested role routes
+const RoleWrapper = ({ role }) => (
+  <RoleRoute role={role}>
+    <Outlet />
+  </RoleRoute>
+);
+
 function AppRoutes() {
-  const location = useLocation();
-
-  const hideLayout =
-    location.pathname === "/login" || location.pathname === "/signup";
-
   return (
-    <>
-      {/* NAVBAR */}
-      <Navbar />
-
-      {/* ROUTES */}
+    <AppLayout>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -41,48 +35,26 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/teachers" element={<Teachers />} />
         <Route path="/courses" element={<Courses />} />
-        <Route path="/studentdashboard" element={<StudentDashboard />} />
-        <Route path="/teacherdashboard" element={<TeacherDashboard />} />
+        
         {/* STUDENT */}
-        <Route
-          path="/student"
-          element={
-            <RoleRoute role="student">
-              <StudentLayout />
-            </RoleRoute>
-          }
-        >
+        <Route path="/student" element={<RoleWrapper role="student" />}>
+          <Route index element={<StudentDashboard />} />
           <Route path="dashboard" element={<StudentDashboard />} />
         </Route>
 
         {/* TEACHER */}
-        <Route
-          path="/teacher"
-          element={
-            <RoleRoute role="teacher">
-              <TeacherLayout />
-            </RoleRoute>
-          }
-        >
+        <Route path="/teacher" element={<RoleWrapper role="teacher" />}>
+          <Route index element={<TeacherDashboard />} />
           <Route path="dashboard" element={<TeacherDashboard />} />
         </Route>
 
         {/* ADMIN */}
-        <Route
-          path="/admin"
-          element={
-            <RoleRoute role="admin">
-              <AdminLayout />
-            </RoleRoute>
-          }
-        >
+        <Route path="/admin" element={<RoleWrapper role="admin" />}>
+          <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
         </Route>
       </Routes>
-
-      {/* FOOTER */}
-      {!hideLayout && <Footer />}
-    </>
+    </AppLayout>
   );
 }
 

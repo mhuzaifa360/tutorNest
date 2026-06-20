@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken";
 import { Student } from '../models/index.js';
 
-
 // =========================
 // SIGNUP CONTROLLER
 // =========================
@@ -22,10 +21,10 @@ export const signupStudent = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !password || !mobile || !province || !city || !classLevel || !gender || !subjects) {
       return res.status(400).json({
         success: false,
-        message: "First name, last name, email and password are required",
+        message: "All fields are required for student signup",
       });
     }
 
@@ -82,7 +81,8 @@ export const signupStudent = async (req, res) => {
       {
         id: newStudent.id,
         role: "student",
-        email: newStudent.email,
+        firstName: newStudent.firstName,
+        lastName: newStudent.lastName,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
@@ -104,7 +104,7 @@ export const signupStudent = async (req, res) => {
     console.error("Student Signup Error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Signup failed",
+      message: error.errors ? error.errors[0].message : "Signup failed",
       error: error.message,
     });
   }
@@ -147,7 +147,8 @@ export const loginStudent = async (req, res) => {
       {
         id: student.id,
         role: "student",
-        email: student.email,
+        firstName: student.firstName,
+        lastName: student.lastName,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
