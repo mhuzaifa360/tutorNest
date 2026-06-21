@@ -72,6 +72,53 @@ export const markAsRead = async (req, res) => {
   }
 };
 
+export const getUnreadCount = async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+    if (req.user.id !== userId && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view these notifications",
+      });
+    }
+
+    const count = await Notification.count({
+      where: { userId, isRead: false },
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: { count },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching unread count",
+      error: error.message,
+    });
+  }
+};
+
+export const markAllAsRead = async (req, res) => {
+  try {
+    await Notification.update(
+      { isRead: true },
+      { where: { userId: req.user.id, isRead: false } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error marking notifications as read",
+      error: error.message,
+    });
+  }
+};
+
 export const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findByPk(req.params.id);

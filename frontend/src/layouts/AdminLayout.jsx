@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { adminApi } from "../services/apiService";
 import AdminNavbar from "../components/admin/AdminNavbar";
 import Sidebar from "../components/admin/Sidebar";
+import PageContainer from "../components/layout/PageContainer";
 
 function AdminLayout() {
   const [open, setOpen] = useState(false);
@@ -23,10 +24,12 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-950 dark:bg-slate-950 dark:text-white">
       <Sidebar open={open} onClose={() => setOpen(false)} />
-      <div className="min-h-screen md:pl-72">
+      <div className="min-h-screen md:pl-[280px]">
         <AdminNavbar onMenuClick={() => setOpen(true)} notifications={notifications} />
-        <main className="px-4 py-6 md:px-8">
-          <Outlet />
+        <main className="py-8 pb-24">
+          <PageContainer>
+            <Outlet />
+          </PageContainer>
         </main>
       </div>
     </div>

@@ -85,7 +85,7 @@ function FindTutors() {
               </div>
               <p className="mt-4 text-sm font-semibold">PKR {teacher.hourlyFee || 0}/hour</p>
               <div className="mt-4 flex gap-2">
-                <Link to={`/student/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View Profile</Link>
+                <Link to={`/dashboard/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View Profile</Link>
                 <button
                   type="button"
                   onClick={() => saveTeacher(teacher.id)}

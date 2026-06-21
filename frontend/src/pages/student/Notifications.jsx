@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
-import { studentApi } from "../../services/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { notificationApi } from "../../services/apiService";
+import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
 
 function Notifications() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const load = async () => {
     setLoading(true);
-    const res = await studentApi.notifications();
+    const res = await notificationApi.getAll();
     if (res.ok) {
       setNotifications(res.data || []);
       setError("");
-    } else setError(res.message || "Unable to load notifications.");
+    } else {
+      setError(res.message || "Unable to load notifications.");
+    }
     setLoading(false);
   };
 
@@ -22,19 +27,43 @@ function Notifications() {
   }, []);
 
   const markRead = async (id) => {
-    const res = await studentApi.markNotificationRead(id);
-    if (res.ok) load();
+    await notificationApi.markAsRead(id);
+    load();
+  };
+
+  const markAllRead = async () => {
+    await notificationApi.markAllAsRead();
+    load();
   };
 
   const remove = async (id) => {
-    const res = await studentApi.deleteNotification(id);
-    if (res.ok) load();
+    await notificationApi.delete(id);
+    load();
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <PageHeader title="Notifications" description="New applications, enrollments, messages, and system updates." />
-      {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={load} /> : notifications.length ? (
+    <PageContainer className="animate-fade-in space-y-5">
+      <PageHeader
+        title="Notifications"
+        description="New applications, enrollments, messages, and system updates."
+        action={
+          notifications.some((item) => !item.isRead) ? (
+            <button
+              type="button"
+              onClick={markAllRead}
+              className="rounded-lg border px-4 py-2 text-sm font-semibold dark:border-slate-700"
+            >
+              Mark all read
+            </button>
+          ) : null
+        }
+      />
+
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState message={error} onRetry={load} />
+      ) : notifications.length ? (
         <div className="space-y-3">
           {notifications.map((item) => (
             <Card key={item.id} className={item.isRead ? "opacity-70" : ""}>
@@ -45,15 +74,31 @@ function Notifications() {
                   <p className="mt-1 text-xs uppercase text-blue-600">{item.type}</p>
                 </div>
                 <div className="flex gap-2">
-                  {!item.isRead && <button onClick={() => markRead(item.id)} className="rounded-lg border px-3 py-2 text-sm font-semibold dark:border-slate-700">Mark read</button>}
-                  <button onClick={() => remove(item.id)} className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white">Delete</button>
+                  {!item.isRead && (
+                    <button
+                      type="button"
+                      onClick={() => markRead(item.id)}
+                      className="rounded-lg border px-3 py-2 text-sm font-semibold dark:border-slate-700"
+                    >
+                      Mark read
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => remove(item.id)}
+                    className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             </Card>
           ))}
         </div>
-      ) : <EmptyState title="No notifications" description="You are all caught up." />}
-    </div>
+      ) : (
+        <EmptyState title="No notifications" description="You are all caught up." />
+      )}
+    </PageContainer>
   );
 }
 

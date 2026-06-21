@@ -3,14 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 import HomeButton from "./HomeButton";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const getRolePaths = (role) => {
   const normalized = (role || "student").toLowerCase();
   if (normalized === "teacher") {
     return {
-      profile: "/teacher/profile",
-      dashboard: "/teacher/dashboard",
-      settings: "/teacher/settings",
+      profile: "/dashboard/profile",
+      dashboard: "/dashboard",
+      settings: "/dashboard/settings",
     };
   }
 
@@ -23,9 +24,9 @@ const getRolePaths = (role) => {
   }
 
   return {
-    profile: "/student/profile",
-    dashboard: "/student/dashboard",
-    settings: "/student/settings",
+    profile: "/dashboard/profile",
+    dashboard: "/dashboard",
+    settings: "/dashboard/settings",
   };
 };
 
@@ -44,6 +45,7 @@ const UserMenu = ({ className = "" }) => {
 
   const paths = getRolePaths(user?.role);
   const initials = user?.initials || getInitials(user?.firstName, user?.lastName);
+  const profileImageUrl = getImageUrl(user?.profileImage);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -92,9 +94,9 @@ const UserMenu = ({ className = "" }) => {
         aria-expanded={isOpen}
         className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-slate-500/10 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
-        {user.profileImage ? (
+        {profileImageUrl ? (
           <img
-            src={user.profileImage}
+            src={profileImageUrl}
             alt={`${user.firstName} ${user.lastName}`}
             className="h-full w-full rounded-full object-cover"
           />

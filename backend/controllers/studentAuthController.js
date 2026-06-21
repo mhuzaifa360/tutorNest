@@ -88,17 +88,20 @@ export const signupStudent = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    // Remove password from response
-    const { password: _, ...safeUser } = newStudent.toJSON();
+    // Build safe user object with required fields only
+    const safeUser = newStudent.toJSON();
+    const responseUser = {
+      id: safeUser.id,
+      firstName: safeUser.firstName,
+      lastName: safeUser.lastName,
+      email: (safeUser.email || "").toString().trim().toLowerCase(),
+      role: "student",
+    };
 
     return res.status(201).json({
       success: true,
-      message: "Student created successfully",
       token,
-      user: {
-        ...safeUser,
-        role: "student",
-      },
+      user: responseUser,
     });
   } catch (error) {
     console.error("Student Signup Error:", error.message);
@@ -154,17 +157,19 @@ export const loginStudent = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    // Remove password from response
-    const { password: _, ...safeUser } = student.toJSON();
+    const safeUser = student.toJSON();
+    const responseUser = {
+      id: safeUser.id,
+      firstName: safeUser.firstName,
+      lastName: safeUser.lastName,
+      email: (safeUser.email || "").toString().trim().toLowerCase(),
+      role: "student",
+    };
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
       token,
-      user: {
-        ...safeUser,
-        role: "student",
-      },
+      user: responseUser,
     });
   } catch (error) {
     console.error("Student Login Error:", error.message);

@@ -103,17 +103,19 @@ export const signupTeacher = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    // Remove password from response
-    const { password: _, ...safeUser } = newTeacher.toJSON();
+    const safeUser = newTeacher.toJSON();
+    const responseUser = {
+      id: safeUser.id,
+      firstName: safeUser.firstName,
+      lastName: safeUser.lastName,
+      email: (safeUser.email || "").toString().trim().toLowerCase(),
+      role: "teacher",
+    };
 
     return res.status(201).json({
       success: true,
-      message: "Teacher created successfully",
       token,
-      user: {
-        ...safeUser,
-        role: "teacher",
-      },
+      user: responseUser,
     });
   } catch (error) {
     console.error("Teacher Signup Error:", error.message);
@@ -170,17 +172,19 @@ export const loginTeacher = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    // Remove password from response
-    const { password: _, ...safeUser } = teacher.toJSON();
+    const safeUser = teacher.toJSON();
+    const responseUser = {
+      id: safeUser.id,
+      firstName: safeUser.firstName,
+      lastName: safeUser.lastName,
+      email: (safeUser.email || "").toString().trim().toLowerCase(),
+      role: "teacher",
+    };
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
       token,
-      user: {
-        ...safeUser,
-        role: "teacher",
-      },
+      user: responseUser,
     });
   } catch (error) {
     console.error("Teacher Login Error:", error.message);

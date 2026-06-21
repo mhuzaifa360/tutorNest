@@ -6,7 +6,6 @@ import {
   setToken,
   setUser,
   clearAuth,
-  decodeToken,
 } from "../services/authService";
 import { profileApi } from "../services/apiService";
 
@@ -34,21 +33,14 @@ const getInitialUser = () => {
     
     if (savedUser && savedUser.role) {
       userToReturn = savedUser;
-    } else {
-      // Fallback: decode from JWT token
-      const token = getToken();
-      if (token) {
-        const decoded = decodeToken(token);
-        if (decoded && decoded.id && decoded.role) {
-          userToReturn = {
-            id: decoded.id,
-            role: decoded.role,
-            firstName: decoded.firstName || "",
-            lastName: decoded.lastName || "",
-          };
+      } else {
+        // Fallback: use saved token/user if present
+        const token = getToken();
+        if (token) {
+          const saved = getUser();
+          if (saved && saved.role) userToReturn = saved;
         }
       }
-    }
 
     if (userToReturn) {
       // Ensure initials are calculated
@@ -102,6 +94,7 @@ export const AuthProvider = ({ children }) => {
         setToken(token);
       }
       if (userData) {
+        setUser(userData);
         updateUser(userData);
       }
     } catch (err) {

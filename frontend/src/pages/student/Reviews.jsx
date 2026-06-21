@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { studentApi } from "../../services/apiService";
+import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
 
 function Reviews() {
@@ -32,7 +33,7 @@ function Reviews() {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <PageContainer className="space-y-5 animate-fade-in">
       <PageHeader title="Reviews" description="Rate teachers and write feedback after learning sessions." />
       <Card>
         <form onSubmit={submit} className="grid gap-3 md:grid-cols-4">
@@ -55,7 +56,7 @@ function Reviews() {
           ))}
         </div>
       ) : <EmptyState title="No reviews yet" description="Submit your first teacher review above." />}
-    </div>
+    </PageContainer>
   );
 }
 

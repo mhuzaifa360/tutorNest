@@ -1,122 +1,154 @@
-import { useState } from "react";
-import {teachers} from "../assets/constant/teachersData"
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Typography from "../components/common/Typography";
+import PageContainer from "../components/layout/PageContainer";
 import Btn from "../components/common/Btn";
+import { searchApi } from "../services/apiService";
+
+const SUBJECTS = [
+  "All",
+  "Mathematics",
+  "Physics",
+  "Computer Science",
+  "Programming",
+  "English",
+  "Chemistry",
+  "Biology",
+];
 
 function Teachers() {
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("All");
   const [price, setPrice] = useState("All");
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // FILTER LOGIC
-  const filtered = teachers.filter((t) => {
-    const matchName = t.name.toLowerCase().includes(search.toLowerCase());
+  const loadTeachers = async (params = {}) => {
+    setLoading(true);
+    const res = await searchApi.teachers(params);
+    if (res.ok) {
+      setTeachers(res.data || []);
+      setError("");
+    } else {
+      setTeachers([]);
+      setError(res.message || "Unable to load tutors.");
+    }
+    setLoading(false);
+  };
 
-    const matchSubject = subject === "All" || t.subjects.includes(subject);
+  useEffect(() => {
+    loadTeachers();
+  }, []);
 
-    const matchPrice =
-      price === "All" ? true : price === "low" ? t.price <= 45 : t.price > 45;
-
-    return matchName && matchSubject && matchPrice;
-  });
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const params = {
+      name: search || undefined,
+      subject: subject !== "All" ? subject : undefined,
+      minFee: price === "high" ? 46 : price === "low" ? 0 : undefined,
+      maxFee: price === "low" ? 45 : undefined,
+    };
+    loadTeachers(params);
+  };
 
   return (
-    <section className="w-full py-20 bg-lightGreyBG dark:bg-slate-950 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 xl:px-24">
-        {/* TITLE */}
+    <section className="w-full bg-lightGreyBG dark:bg-slate-950 transition-colors duration-300 py-20">
+      <PageContainer>
         <div className="text-center mb-10">
           <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
             Find Your Perfect Tutor
           </Typography>
-
           <Typography className="text-textGrey dark:text-gray-400 mt-2">
-            Browse our verified tutors and find the perfect match for your
-            learning needs
+            Browse our verified tutors and find the perfect match for your learning needs.
           </Typography>
         </div>
 
-        {/* SEARCH + FILTERS */}
-        <div className="flex flex-col md:flex-row gap-4 mb-10">
-          {/* SEARCH */}
+        <form onSubmit={handleSearch} className="flex flex-col gap-4 md:flex-row mb-10">
           <input
             type="text"
             placeholder="Search tutors..."
-            className="w-full md:w-1/2 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white placeholder:text-gray-400 outline-none transition-colors"
+            value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:w-1/2 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white placeholder:text-gray-400 outline-none transition-colors"
           />
 
-          {/* SUBJECT */}
           <select
-            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
+            value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
           >
-            <option>All</option>
-            <option>Mathematics</option>
-            <option>Physics</option>
-            <option>Computer Science</option>
-            <option>Programming</option>
-            <option>English</option>
-            <option>Chemistry</option>
-            <option>Biology</option>
+            {SUBJECTS.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
 
-          {/* PRICE */}
           <select
-            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
+            value={price}
             onChange={(e) => setPrice(e.target.value)}
+            className="w-full md:w-1/4 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-textBlack dark:text-white transition-colors"
           >
             <option value="All">All Prices</option>
-            <option value="low">Below $45</option>
-            <option value="high">Above $45</option>
+            <option value="low">Below 45</option>
+            <option value="high">Above 45</option>
           </select>
+        </form>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <Typography className="text-textGrey dark:text-gray-400">
+            {loading ? "Loading tutors..." : `${teachers.length} tutors found`}
+          </Typography>
+          <Btn type="submit" variant="blue" onClick={handleSearch} className="w-full md:w-auto">
+            Search
+          </Btn>
         </div>
 
-        {/* RESULTS */}
-        <p className="text-textGrey dark:text-gray-400 mb-6">{filtered.length} tutors found</p>
-
-        {/* CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filtered.map((t) => (
-            <div
-              key={t.id}
-              className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm hover:shadow-lg transition flex flex-col gap-3 items-center border border-transparent dark:border-slate-800"
-            >
-              {/* INITIALS */}
-              <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full font-bold">
-                {t.initials}
+        {error ? (
+          <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-800 dark:bg-red-900/20">
+            {error}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {teachers.map((teacher) => (
+              <div
+                key={teacher.id}
+                className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm hover:shadow-lg transition flex flex-col gap-3 items-center border border-transparent dark:border-slate-800"
+              >
+                <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full font-bold text-lg">
+                  {teacher.firstName?.[0] || "T"}
+                  {teacher.lastName?.[0] || ""}
+                </div>
+                <Typography className="font-semibold text-textBlack dark:text-white text-center">
+                  {teacher.firstName} {teacher.lastName}
+                </Typography>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {(Array.isArray(teacher.subjects) ? teacher.subjects : []).slice(0, 3).map((subject) => (
+                    <span
+                      key={subject}
+                      className="text-xs bg-lightGreyBG dark:bg-slate-800 text-textGrey dark:text-gray-300 px-2 py-1 rounded-full"
+                    >
+                      {subject}
+                    </span>
+                  ))}
+                </div>
+                <Typography className="text-textGrey dark:text-gray-400 text-sm">
+                  ⭐ {teacher.rating?.average ?? teacher.rating ?? 0} ({teacher.rating?.totalReviews ?? "0"})
+                </Typography>
+                <Typography className="font-semibold text-textBlack dark:text-white">
+                  PKR {teacher.hourlyFee || teacher.hourlyFee === 0 ? teacher.hourlyFee : "-"}/hour
+                </Typography>
+                <Link to={`/dashboard/tutors/${teacher.id}`} className="w-full">
+                  <Btn variant="blue" className="w-full">
+                    View Profile
+                  </Btn>
+                </Link>
               </div>
-
-              {/* NAME */}
-              <Typography className="font-semibold text-textBlack dark:text-white">{t.name}</Typography>
-
-              {/* SUBJECTS */}
-              <div className="flex flex-wrap gap-2">
-                {t.subjects.map((s, i) => (
-                  <span
-                    key={i}
-                    className="text-xs bg-lightGreyBG dark:bg-slate-800 text-textGrey dark:text-gray-300 px-2 py-1 rounded-full"
-                  >
-                    {s}
-                  </span>
-                ))}
-              </div>
-
-              {/* RATING */}
-              <Typography className="text-textGrey dark:text-gray-400">
-                ⭐ {t.rating} ({t.reviews})
-              </Typography>
-
-              {/* PRICE */}
-              <Typography className="font-semibold text-textBlack dark:text-white">${t.price}/hour</Typography>
-
-              {/* BUTTON */}
-              <Btn variant="blue">
-                View Profile
-              </Btn>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        )}
+      </PageContainer>
     </section>
   );
 }

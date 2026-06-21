@@ -80,10 +80,10 @@ const Login = () => {
       const userRole = data.user.role?.toLowerCase();
       switch (userRole) {
         case "student":
-          navigate("/student/dashboard");
+          navigate("/dashboard");
           break;
         case "teacher":
-          navigate("/teacher/dashboard");
+          navigate("/dashboard");
           break;
         case "admin":
           navigate("/admin/dashboard");

@@ -226,9 +226,9 @@ const Signup = () => {
 
       // Redirect
       if (data.user.role === "student") {
-        navigate("/student/dashboard");
+        navigate("/dashboard");
       } else {
-        navigate("/teacher/dashboard");
+        navigate("/dashboard");
       }
     } catch (err) {
       console.error("Signup error:", err);

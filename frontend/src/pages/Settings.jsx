@@ -4,6 +4,7 @@ import { FiAlertTriangle, FiBell, FiLock, FiMonitor, FiTrash2 } from "react-icon
 import ThemeToggle from "../components/common/ThemeToggle";
 import { useAuth } from "../context/AuthContext";
 import { profileApi } from "../services/apiService";
+import PageContainer from "../components/layout/PageContainer";
 
 const inputClass =
   "h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-950 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-900/30";
@@ -24,6 +25,8 @@ const Toggle = ({ checked, onChange }) => (
     />
   </button>
 );
+
+
 
 function Settings() {
   const navigate = useNavigate();
@@ -95,7 +98,7 @@ function Settings() {
   };
 
   return (
-    <section className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-slate-950 sm:px-6 lg:px-8">
+    <PageContainer className="bg-gray-50 dark:bg-slate-950 rounded-3xl p-0">
       <div className="mx-auto max-w-5xl">
         <div>
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">Settings</p>
@@ -246,7 +249,7 @@ function Settings() {
           </div>
         </div>
       </div>
-    </section>
+    </PageContainer>
   );
 }
 

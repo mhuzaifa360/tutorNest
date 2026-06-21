@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { studentApi } from "../../services/apiService";
+import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
 
 function Applications() {
@@ -27,7 +28,7 @@ function Applications() {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <PageContainer className="space-y-5 animate-fade-in">
       <PageHeader title="Applications" description="Review teacher applications received on your tuition jobs." />
       {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={load} /> : applications.length ? (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -45,7 +46,7 @@ function Applications() {
           ))}
         </div>
       ) : <EmptyState title="No applications yet" description="Applications will appear after teachers apply to your jobs." />}
-    </div>
+    </PageContainer>
   );
 }
 

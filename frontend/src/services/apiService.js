@@ -1,45 +1,15 @@
-import { getToken } from "./authService";
+import { apiRequest } from "./httpService";
 
-const API_BASE = "http://localhost:5000/v1";
+const buildQuery = (params = {}) =>
+  new URLSearchParams(
+    Object.entries(params).filter(
+      ([, value]) => value !== "" && value !== null && value !== undefined
+    )
+  ).toString();
 
-/**
- * Creates headers with JWT authorization.
- */
-const authHeaders = () => {
-  const token = getToken();
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-};
-
-/**
- * Safe JSON response parser — prevents "undefined is not valid JSON" crash.
- */
-const safeJson = async (response) => {
-  try {
-    const text = await response.text();
-    if (!text) return { success: false, message: "Empty response" };
-    return JSON.parse(text);
-  } catch {
-    return { success: false, message: "Invalid server response" };
-  }
-};
-
-/**
- * Generic API request wrapper with error handling.
- */
-const apiRequest = async (url, options = {}) => {
-  try {
-    const response = await fetch(`${API_BASE}${url}`, {
-      headers: authHeaders(),
-      ...options,
-    });
-    const data = await safeJson(response);
-    return { ok: response.ok, ...data };
-  } catch (error) {
-    return { ok: false, success: false, message: error.message || "Network error" };
-  }
+const apiRequestWithParams = (url, params = {}, options = {}) => {
+  const query = buildQuery(params);
+  return apiRequest(`${url}${query ? `?${query}` : ""}`, options);
 };
 
 // ==================
@@ -200,6 +170,53 @@ export const studentApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+};
+
+// ==================
+// SEARCH API
+// ==================
+
+export const searchApi = {
+  teachers: (params = {}) => apiRequestWithParams("/search/teachers", params),
+  courses: (params = {}) => apiRequestWithParams("/search/courses", params),
+  jobs: (params = {}) => apiRequestWithParams("/search/jobs", params),
+};
+
+// ==================
+// NOTIFICATION API
+// ==================
+
+export const notificationApi = {
+  getAll: () => apiRequest("/notifications/getNotifications"),
+  getUnreadCount: (userId) => apiRequest(`/notifications/unread/${userId}`),
+  markAsRead: (id) => apiRequest(`/notifications/markAsRead/${id}`, { method: "PUT" }),
+  markAllAsRead: () => apiRequest("/notifications/markAllAsRead", { method: "PUT" }),
+  delete: (id) =>
+    apiRequest(`/notifications/deleteNotification/${id}`, { method: "DELETE" }),
+};
+
+// ==================
+// MESSAGES API
+// ==================
+
+export const messagesApi = {
+  send: (body) =>
+    apiRequest("/messages/send", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  conversations: (userId) => apiRequest(`/messages/conversations/${userId}`),
+  getConversation: (conversationId) => apiRequest(`/messages/${conversationId}`),
+};
+
+// ==================
+// DASHBOARD API
+// ==================
+
+export const dashboardApi = {
+  student: (id) => apiRequest(`/dashboard/student/${id}`),
+  teacher: (id) => apiRequest(`/dashboard/teacher/${id}`),
+  admin: () => apiRequest("/dashboard/admin"),
 };
 
 // ==================

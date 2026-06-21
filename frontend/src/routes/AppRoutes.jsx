@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import Home from "../pages/Home";
 import About from "../pages/About";
@@ -8,15 +8,16 @@ import Login from "../pages/Login";
 import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
 import Profile from "../pages/Profile";
-import EditProfile from "../pages/EditProfile";
 import Settings from "../pages/Settings";
 
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "../components/layout/AppLayout";
 import AdminLayout from "../layouts/AdminLayout";
+import MainLayout from "../layouts/MainLayout";
+import DashboardHome from "../pages/dashboard/DashboardHome";
+import { LegacyStudentRedirect, LegacyTeacherRedirect } from "./LegacyRedirects";
 
-// pages
-import StudentDashboard from "../pages/student/StudentDashboard";
+import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import FindTutors from "../pages/student/FindTutors";
 import TeacherProfile from "../pages/student/TeacherProfile";
 import SavedTutors from "../pages/student/SavedTutors";
@@ -24,10 +25,9 @@ import StudentCourses from "../pages/student/StudentCourses";
 import MyCourses from "../pages/student/MyCourses";
 import TuitionJobs from "../pages/student/TuitionJobs";
 import StudentApplications from "../pages/student/Applications";
-import StudentMessages from "../pages/student/Messages";
+import Messages from "../pages/student/Messages";
 import StudentNotifications from "../pages/student/Notifications";
 import StudentReviews from "../pages/student/Reviews";
-import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUsers from "../pages/admin/Users";
 import AdminTeachers from "../pages/admin/Teachers";
@@ -54,145 +54,117 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* PROFILE ROUTES */}
+        {/* UNIFIED DASHBOARD SHELL */}
         <Route
-          path="/profile"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <Profile />
+              <MainLayout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/profile/edit"
-          element={
-            <ProtectedRoute>
-              <EditProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-        
-        {/* PROTECTED DASHBOARDS */}
-        <Route
-          path="/student/dashboard"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/tutors"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <FindTutors />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/tutors/:id"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <TeacherProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/saved-tutors"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <SavedTutors />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/courses"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentCourses />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/my-courses"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <MyCourses />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/jobs"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <TuitionJobs />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/applications"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentApplications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/messages"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentMessages />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/notifications"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentNotifications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/reviews"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentReviews />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/profile"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/settings"
-          element={
-            <ProtectedRoute requiredRole="student">
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/dashboard"
-          element={
-            <ProtectedRoute requiredRole="teacher">
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route index element={<DashboardHome />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+
+          <Route
+            path="tutors"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <FindTutors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="tutors/:id"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <TeacherProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="saved-tutors"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <SavedTutors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="courses"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="my-courses"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <MyCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="jobs"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <TuitionJobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="applications"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentNotifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="reviews"
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentReviews />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="students"
+            element={
+              <ProtectedRoute requiredRole="teacher">
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="earnings"
+            element={
+              <ProtectedRoute requiredRole="teacher">
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        {/* LEGACY REDIRECTS */}
+        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
+        <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
+        <Route path="/student/*" element={<LegacyStudentRedirect />} />
+        <Route path="/teacher/*" element={<LegacyTeacherRedirect />} />
+
+        {/* ADMIN AREA */}
         <Route
           path="/admin"
           element={
@@ -212,10 +184,11 @@ function AppRoutes() {
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
-        <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
-        <Route path="/teacher" element={<Navigate to="/teachers" replace />} />
+        <Route path="/teacher" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/student" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AppLayout>
   );

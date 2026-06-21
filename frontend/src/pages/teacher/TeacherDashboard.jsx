@@ -1,73 +1,130 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { FiBriefcase, FiDollarSign, FiMessageSquare, FiStar, FiUsers } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
-import { FiUsers, FiDollarSign, FiStar } from "react-icons/fi";
+import { dashboardApi } from "../../services/apiService";
+import PageContainer from "../../components/layout/PageContainer";
+import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
+
+const Stat = ({ title, value, icon }) => (
+  <Card>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="mt-2 text-3xl font-bold text-gray-950 dark:text-white">{value}</p>
+      </div>
+      <div className="rounded-lg bg-indigo-50 p-3 text-xl text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+        {icon}
+      </div>
+    </div>
+  </Card>
+);
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const stats = [
-    {
-      title: "Total Students",
-      value: "12",
-      icon: <FiUsers className="text-[28px] text-blue-600 dark:text-blue-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-blue-100 dark:bg-blue-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-    {
-      title: "Total Earnings",
-      value: "Rs 45,000",
-      icon: <FiDollarSign className="text-[28px] text-emerald-600 dark:text-emerald-400 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-emerald-100 dark:bg-emerald-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-    {
-      title: "Average Rating",
-      value: "4.8",
-      icon: <FiStar className="text-[28px] text-amber-500 dark:text-amber-400 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />,
-      bgIcon: "bg-amber-100 dark:bg-amber-900/40",
-      bgCard: "bg-white dark:bg-slate-900",
-    },
-  ];
+  const load = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    const res = await dashboardApi.teacher(user.id);
+    if (res.ok) {
+      setData(res.data);
+      setError("");
+    } else {
+      setError(res.message || "Unable to load teacher dashboard.");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+  }, [user?.id]);
+
+  if (loading) return <LoadingState label="Loading your dashboard..." />;
+  if (error) return <ErrorState message={error} onRetry={load} />;
+
+  const stats = data?.stats || {};
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in font-inter pb-12">
-      {/* WELCOME HERO SECTION */}
-      <div className="relative overflow-hidden rounded-[24px] shadow-sm group">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-slate-800 dark:to-indigo-950/40 z-0"></div>
-        <div className="absolute right-0 top-0 w-1/2 h-full opacity-20 pointer-events-none z-0">
-          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="absolute right-[-20%] top-[-50%] w-[150%] h-[200%] text-indigo-500 fill-current">
-            <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,81.3,-46.3C90.8,-33.5,96.8,-18.1,97.3,-2.6C97.8,12.9,92.8,28.5,83.9,41.9C75,55.3,62.2,66.5,47.9,73.5C33.6,80.5,17.8,83.3,2.4,79.1C-13,74.9,-28,63.7,-42.2,55.5C-56.4,47.3,-69.8,42,-78.9,31.5C-88,21,-92.8,5.3,-91.3,-9.9C-89.8,-25.1,-82,-39.8,-71.2,-50.7C-60.4,-61.6,-46.6,-68.7,-32.9,-75.7C-19.2,-82.7,-5.6,-89.6,8.2,-91.3C22,-93,42.4,-89.6,44.7,-76.4Z" transform="translate(100 100)" />
-          </svg>
-        </div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 md:p-10 lg:p-12 backdrop-blur-sm bg-white/30 dark:bg-slate-900/20">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-              Welcome back, <span className="text-indigo-600 dark:text-indigo-400">{user?.firstName || "Teacher"}!</span> 👋
-            </h1>
-            <p className="text-slate-600 dark:text-slate-300 mt-3 text-lg font-medium">
-              Ready to inspire and educate today? View your daily insights below.
-            </p>
-          </div>
-        </div>
+    <PageContainer className="animate-fade-in space-y-6">
+      <PageHeader
+        title={`Welcome back, ${user?.firstName || "Teacher"}`}
+        description="Track students, applications, earnings, and messages from one workspace."
+        action={
+          <Link
+            to="/dashboard/messages"
+            className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Open Messages
+          </Link>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat title="Total Students" value={stats.students || 0} icon={<FiUsers />} />
+        <Stat
+          title="Total Earnings"
+          value={`PKR ${Number(stats.earnings || 0).toLocaleString()}`}
+          icon={<FiDollarSign />}
+        />
+        <Stat title="Average Rating" value={stats.rating || 0} icon={<FiStar />} />
+        <Stat title="Unread Messages" value={stats.unreadMessages || 0} icon={<FiMessageSquare />} />
       </div>
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat, idx) => (
-          <div 
-            key={idx} 
-            className={`${stat.bgCard} p-6 rounded-2xl shadow-sm hover:shadow-lg border border-slate-100/50 dark:border-slate-800 flex items-center gap-6 hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer`}
-          >
-            <div className={`p-4 rounded-2xl ${stat.bgIcon} shadow-inner`}>
-              {stat.icon}
-            </div>
-            <div className="flex-1">
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm tracking-wide uppercase">{stat.title}</p>
-              <h3 className="text-3xl font-extrabold text-slate-800 dark:text-white mt-1 tracking-tight">{stat.value}</h3>
-            </div>
-          </div>
-        ))}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card>
+          <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-950 dark:text-white">
+            <FiBriefcase /> Recent Applications
+          </h2>
+          {data?.recentApplications?.length ? (
+            data.recentApplications.map((application) => (
+              <div
+                key={application.id}
+                className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800"
+              >
+                <p className="font-semibold">{application.job?.title || "Job application"}</p>
+                <p className="text-sm text-gray-500">
+                  {application.job?.student
+                    ? `${application.job.student.firstName} ${application.job.student.lastName}`
+                    : "Student"}{" "}
+                  • {application.status}
+                </p>
+              </div>
+            ))
+          ) : (
+            <EmptyState
+              title="No applications yet"
+              description="Applications from students will appear here."
+            />
+          )}
+        </Card>
+
+        <Card>
+          <h2 className="mb-4 font-bold text-gray-950 dark:text-white">Recent Reviews</h2>
+          {data?.recentReviews?.length ? (
+            data.recentReviews.map((review) => (
+              <div
+                key={review.id}
+                className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800"
+              >
+                <p className="font-semibold">
+                  {review.student
+                    ? `${review.student.firstName} ${review.student.lastName}`
+                    : "Student"}{" "}
+                  • {review.rating}/5
+                </p>
+                <p className="text-sm text-gray-500">{review.comment || "No comment"}</p>
+              </div>
+            ))
+          ) : (
+            <EmptyState title="No reviews yet" description="Student reviews will appear here." />
+          )}
+        </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

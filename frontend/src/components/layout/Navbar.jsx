@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FiBell, FiMenu, FiSearch, FiX } from "react-icons/fi";
+import { FiMenu, FiSearch, FiX } from "react-icons/fi";
 
 import ThemeToggle from "../common/ThemeToggle";
 import HomeButton from "../common/HomeButton";
 import UserMenu from "../common/UserMenu";
+import NotificationBell from "../common/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 
 function Navbar({ isDashboard }) {
@@ -37,7 +38,7 @@ function Navbar({ isDashboard }) {
   };
 
   return (
-    <header className={`sticky top-0 z-40 h-18 backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-gray-100 dark:border-slate-800 shadow-sm transition-all duration-300`}>
+    <header className={`sticky top-0 z-40 h-[72px] backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-gray-100 dark:border-slate-800 shadow-sm transition-all duration-300`}>
       <div className="mx-auto flex h-full items-center justify-between px-4 md:px-8 xl:px-10 w-full max-w-[1600px]">
         <div className="flex items-center gap-4">
           {isDashboard && (
@@ -85,16 +86,7 @@ function Navbar({ isDashboard }) {
         <div className="flex items-center gap-3">
           {isDashboard && <HomeButton />}
 
-          {isDashboard && (
-            <button
-              type="button"
-              className="relative rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              aria-label="Notifications"
-            >
-              <FiBell className="text-xl" />
-              <span className="absolute -right-1 -top-1 inline-flex h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-950" />
-            </button>
-          )}
+          {isDashboard && user && <NotificationBell />}
 
           <ThemeToggle />
 

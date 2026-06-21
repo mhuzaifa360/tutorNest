@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiBell, FiBookOpen, FiBookmark, FiBriefcase, FiMessageSquare, FiUsers } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
-import { studentApi } from "../../services/apiService";
+import { dashboardApi } from "../../services/apiService";
+import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
 
 const Stat = ({ title, value, icon }) => (
@@ -26,8 +27,9 @@ function StudentDashboard() {
   const [error, setError] = useState("");
 
   const load = async () => {
+    if (!user?.id) return;
     setLoading(true);
-    const res = await studentApi.overview();
+    const res = await dashboardApi.student(user.id);
     if (res.ok) {
       setData(res.data);
       setError("");
@@ -39,7 +41,7 @@ function StudentDashboard() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [user?.id]);
 
   if (loading) return <LoadingState label="Loading your dashboard..." />;
   if (error) return <ErrorState message={error} onRetry={load} />;
@@ -47,12 +49,15 @@ function StudentDashboard() {
   const stats = data?.stats || {};
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <PageContainer className="animate-fade-in space-y-6">
       <PageHeader
         title={`Welcome back, ${user?.firstName || "Student"}`}
         description="Track courses, tutors, jobs, applications, and messages from one workspace."
         action={
-          <Link to="/student/tutors" className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">
+          <Link
+            to="/dashboard/tutors"
+            className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
+          >
             Find Tutors
           </Link>
         }
@@ -69,25 +74,40 @@ function StudentDashboard() {
         <Card className="xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-bold text-gray-950 dark:text-white">Recommended Teachers</h2>
-            <Link to="/student/tutors" className="text-sm font-semibold text-blue-600">View all</Link>
+            <Link to="/dashboard/tutors" className="text-sm font-semibold text-blue-600">
+              View all
+            </Link>
           </div>
           {data?.recommendedTeachers?.length ? (
             <div className="grid gap-3 md:grid-cols-2">
               {data.recommendedTeachers.map((teacher) => (
-                <Link key={teacher.id} to={`/student/tutors/${teacher.id}`} className="rounded-lg border border-gray-200 p-4 transition hover:border-blue-300 dark:border-slate-800">
-                  <p className="font-semibold text-gray-950 dark:text-white">{teacher.firstName} {teacher.lastName}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{teacher.qualification || "Tutor"} • {teacher.experience || 0} yrs</p>
+                <Link
+                  key={teacher.id}
+                  to={`/dashboard/tutors/${teacher.id}`}
+                  className="rounded-lg border border-gray-200 p-4 transition hover:border-blue-300 dark:border-slate-800"
+                >
+                  <p className="font-semibold text-gray-950 dark:text-white">
+                    {teacher.firstName} {teacher.lastName}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {teacher.qualification || "Tutor"} • {teacher.experience || 0} yrs
+                  </p>
                   <p className="mt-2 text-sm text-amber-600">Rating {teacher.rating || 0}</p>
                 </Link>
               ))}
             </div>
           ) : (
-            <EmptyState title="No recommendations yet" description="Tutors will appear as they join TutorNest." />
+            <EmptyState
+              title="No recommendations yet"
+              description="Tutors will appear as they join TutorNest."
+            />
           )}
         </Card>
 
         <Card>
-          <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-950 dark:text-white"><FiBell /> Recent Activity</h2>
+          <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-950 dark:text-white">
+            <FiBell /> Recent Activity
+          </h2>
           {data?.recentActivity?.length ? (
             <div className="space-y-3">
               {data.recentActivity.map((item) => (
@@ -98,7 +118,10 @@ function StudentDashboard() {
               ))}
             </div>
           ) : (
-            <EmptyState title="No recent activity" description="Notifications and activity will appear here." />
+            <EmptyState
+              title="No recent activity"
+              description="Notifications and activity will appear here."
+            />
           )}
         </Card>
       </div>
@@ -106,25 +129,50 @@ function StudentDashboard() {
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
           <h2 className="mb-4 font-bold text-gray-950 dark:text-white">Latest Courses</h2>
-          {data?.latestCourses?.length ? data.latestCourses.map((course) => (
-            <div key={course.id} className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800">
-              <p className="font-semibold">{course.title}</p>
-              <p className="text-sm text-gray-500">{course.teacher ? `${course.teacher.firstName} ${course.teacher.lastName}` : "TutorNest"}</p>
-            </div>
-          )) : <EmptyState title="No courses yet" description="New courses will show up here." />}
+          {data?.latestCourses?.length ? (
+            data.latestCourses.map((course) => (
+              <div
+                key={course.id}
+                className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800"
+              >
+                <p className="font-semibold">{course.title}</p>
+                <p className="text-sm text-gray-500">
+                  {course.teacher
+                    ? `${course.teacher.firstName} ${course.teacher.lastName}`
+                    : "TutorNest"}
+                </p>
+              </div>
+            ))
+          ) : (
+            <EmptyState title="No courses yet" description="New courses will show up here." />
+          )}
         </Card>
 
         <Card>
-          <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-950 dark:text-white"><FiUsers /> Recent Applications</h2>
-          {data?.recentApplications?.length ? data.recentApplications.map((app) => (
-            <div key={app.id} className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800">
-              <p className="font-semibold">{app.tutor ? `${app.tutor.firstName} ${app.tutor.lastName}` : "Teacher"}</p>
-              <p className="text-sm text-gray-500">{app.status}</p>
-            </div>
-          )) : <EmptyState title="No applications yet" description="Teacher applications to your jobs will appear here." />}
+          <h2 className="mb-4 flex items-center gap-2 font-bold text-gray-950 dark:text-white">
+            <FiUsers /> Recent Applications
+          </h2>
+          {data?.recentApplications?.length ? (
+            data.recentApplications.map((app) => (
+              <div
+                key={app.id}
+                className="mb-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800"
+              >
+                <p className="font-semibold">
+                  {app.tutor ? `${app.tutor.firstName} ${app.tutor.lastName}` : "Teacher"}
+                </p>
+                <p className="text-sm text-gray-500">{app.status}</p>
+              </div>
+            ))
+          ) : (
+            <EmptyState
+              title="No applications yet"
+              description="Teacher applications to your jobs will appear here."
+            />
+          )}
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

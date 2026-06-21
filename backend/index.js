@@ -20,6 +20,8 @@ import searchRoutes from "./routes/searchRoutes.js";
 import recommendRoutes from "./routes/recommendTeacherRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import studentModuleRoutes from "./routes/studentModuleRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 // DB CONNECTION
 import { connectDB, sequelize } from "./config/database.js";
@@ -63,6 +65,8 @@ app.use(`${API_PREFIX}/search`, searchRoutes); // search routes
 app.use(`${API_PREFIX}/recommend`, recommendRoutes); // recommendation routes
 app.use(`${API_PREFIX}/profile`, profileRoutes); // profile routes
 app.use(`${API_PREFIX}/student`, studentModuleRoutes); // student module routes
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes); // unified dashboard routes
+app.use(`${API_PREFIX}/messages`, messageRoutes); // unified messaging routes
  
 // HEALTH CHECK
 app.get("/", (req, res) => {
