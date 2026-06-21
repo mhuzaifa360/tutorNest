@@ -39,7 +39,16 @@ function TuitionJobs() {
 
   const edit = (job) => {
     setEditingId(job.id);
-    setForm({ ...emptyForm, ...job, classLevel: "", province: "" });
+    setForm({
+      title: job.title || "",
+      subject: job.subject || "",
+      classLevel: job.classLevel || "",
+      description: job.description || "",
+      budget: job.budget || "",
+      city: job.city || "",
+      province: job.province || "",
+      mode: job.mode || "home",
+    });
   };
 
   const remove = async (id) => {

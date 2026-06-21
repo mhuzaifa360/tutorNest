@@ -13,6 +13,7 @@ import {
 } from "react-icons/fi";
 
 const links = [
+  { name: "Home", path: "/", icon: <FiHome /> },
   { name: "Dashboard", path: "/admin/dashboard", icon: <FiHome /> },
   { name: "Users Management", path: "/admin/users", icon: <FiUsers /> },
   { name: "Students", path: "/admin/students", icon: <FiGrid /> },

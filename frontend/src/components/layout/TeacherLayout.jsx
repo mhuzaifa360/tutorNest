@@ -1,5 +1,7 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import HomeButton from "../common/HomeButton";
+import UserMenu from "../common/UserMenu";
 
 const TeacherLayout = () => {
   const { user } = useAuth();
@@ -21,9 +23,15 @@ const TeacherLayout = () => {
         </nav>
       </aside>
 
-      <main className="flex-1 p-6 bg-gray-100">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col bg-gray-100">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+          <HomeButton />
+          <UserMenu />
+        </header>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

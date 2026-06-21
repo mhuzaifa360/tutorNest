@@ -9,6 +9,7 @@ const input = "h-11 rounded-lg border border-gray-300 bg-white px-3 text-sm outl
 function FindTutors() {
   const [filters, setFilters] = useState({ search: "", subject: "", city: "", province: "", teachingMode: "", minFee: "", maxFee: "", minExperience: "", minRating: "" });
   const [teachers, setTeachers] = useState([]);
+  const [savingId, setSavingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,6 +28,15 @@ function FindTutors() {
   }, []);
 
   const update = (event) => setFilters((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+
+  const saveTeacher = async (teacherId) => {
+    setSavingId(teacherId);
+    const res = await studentApi.saveTeacher(teacherId);
+    setSavingId(null);
+    if (!res.ok) {
+      setError(res.message || "Unable to save teacher.");
+    }
+  };
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -76,7 +86,14 @@ function FindTutors() {
               <p className="mt-4 text-sm font-semibold">PKR {teacher.hourlyFee || 0}/hour</p>
               <div className="mt-4 flex gap-2">
                 <Link to={`/student/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View Profile</Link>
-                <button onClick={() => studentApi.saveTeacher(teacher.id)} className="rounded-lg border px-3 py-2 dark:border-slate-700"><FiBookmark /></button>
+                <button
+                  type="button"
+                  onClick={() => saveTeacher(teacher.id)}
+                  disabled={savingId === teacher.id}
+                  className="inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
+                >
+                  <FiBookmark />
+                </button>
               </div>
             </Card>
           ))}

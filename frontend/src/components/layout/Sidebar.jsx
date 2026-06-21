@@ -36,6 +36,7 @@ const Sidebar = () => {
   const getLinks = () => {
     if (role === "teacher") {
       return [
+        { name: "Home", path: "/", icon: <FiHome /> },
         { name: "Dashboard", path: "/teacher/dashboard", icon: <FiHome /> },
         { name: "My Students", path: "/teacher/students", icon: <FiUsers /> },
         { name: "Earnings", path: "/teacher/earnings", icon: <FiDollarSign /> },
@@ -45,6 +46,7 @@ const Sidebar = () => {
     }
     // Default to student
     return [
+      { name: "Home", path: "/", icon: <FiHome /> },
       { name: "Dashboard", path: "/student/dashboard", icon: <FiHome /> },
       { name: "Find Tutors", path: "/student/tutors", icon: <FiSearch /> },
       { name: "Saved Tutors", path: "/student/saved-tutors", icon: <FiBookmark /> },
@@ -65,17 +67,17 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* MOBILE OVERLAY */}
+      {/* MOBILE & TABLET OVERLAY */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* SIDEBAR */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-blue-700 to-indigo-900 text-white flex flex-col transition-transform duration-300 ease-in-out shadow-2xl shadow-indigo-900/20 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-gradient-to-b from-blue-700 to-indigo-900 text-white flex flex-col transition-transform duration-300 ease-in-out shadow-2xl shadow-indigo-900/20 lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* LOGO AREA */}
         <div className="h-20 px-8 flex items-center shrink-0 border-b border-white/10">

@@ -9,6 +9,8 @@ function TeacherProfile() {
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -28,6 +30,20 @@ function TeacherProfile() {
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!teacher) return <EmptyState title="Teacher not found" />;
 
+  const handleSave = async () => {
+    setSending(true);
+    const res = await studentApi.saveTeacher(teacher.id);
+    setStatusMessage(res.ok ? res.message || "Teacher saved." : res.message || "Could not save teacher.");
+    setSending(false);
+  };
+
+  const handleMessage = async () => {
+    setSending(true);
+    const res = await studentApi.sendMessage({ receiverId: teacher.id, receiverRole: "teacher", body: "Hi, I am interested in learning with you." });
+    setStatusMessage(res.ok ? "Message sent successfully." : res.message || "Unable to send message.");
+    setSending(false);
+  };
+
   return (
     <div className="space-y-5 animate-fade-in">
       <Card>
@@ -41,10 +57,29 @@ function TeacherProfile() {
             <p className="mt-2 flex items-center gap-1 text-amber-600"><FiStar /> {teacher.rating || 0} ({teacher.reviewsCount || 0} reviews)</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => studentApi.saveTeacher(teacher.id)} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold dark:border-slate-700"><FiBookmark /> Save</button>
-            <button onClick={() => studentApi.sendMessage({ receiverId: teacher.id, receiverRole: "teacher", body: "Hi, I am interested in learning with you." })} className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold dark:border-slate-700"><FiMessageSquare /> Message</button>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white"><FiUserCheck /> Hire Teacher</button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={sending}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
+            >
+              <FiBookmark /> Save
+            </button>
+            <button
+              type="button"
+              onClick={handleMessage}
+              disabled={sending}
+              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
+            >
+              <FiMessageSquare /> Message
+            </button>
+            <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
+              <FiUserCheck /> Hire Teacher
+            </button>
           </div>
+          {statusMessage && (
+            <p className="mt-3 text-sm text-blue-600 dark:text-blue-300">{statusMessage}</p>
+          )}
         </div>
       </Card>
 

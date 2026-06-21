@@ -49,6 +49,13 @@ export const markAsRead = async (req, res) => {
       });
     }
 
+    if (notification.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this notification",
+      });
+    }
+
     await notification.update({ isRead: true });
 
     return res.status(200).json({
@@ -73,6 +80,13 @@ export const deleteNotification = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Notification not found",
+      });
+    }
+
+    if (notification.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this notification",
       });
     }
 

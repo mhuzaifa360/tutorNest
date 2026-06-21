@@ -2,6 +2,8 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { FiHome, FiBook, FiMessageSquare, FiLogOut, FiSettings, FiMenu } from "react-icons/fi";
 import { useState } from "react";
+import HomeButton from "../common/HomeButton";
+import UserMenu from "../common/UserMenu";
 
 const StudentLayout = () => {
   const { user, logout } = useAuth();
@@ -110,14 +112,9 @@ const StudentLayout = () => {
           {/* We import the global Navbar, but hide its logo and desktop links using CSS or we can just render the right-side profile logic */}
           {/* To keep it clean and DRY without duplicating the avatar logic, we can embed the Navbar component but it will conflict with our layout if it's strictly coded. Let's just use the global Navbar and pass a prop, OR duplicate the right side since it's just ThemeToggle and Avatar. */}
           
-          {/* I will use the global Navbar inside our layout and absolute position it! NO, that will cause duplicates if AppRoutes renders it. I will render the specific profile right side here for the dashboard. */}
-          <div className="flex items-center gap-4">
-             {/* We can just render the full Navbar component here if we adapt it. For now, since the user wants a single source of truth, I'll update App.jsx and AppRoutes.jsx to NOT double render. */}
-             <div className="w-full absolute inset-0 pointer-events-none">
-               <div className="pointer-events-auto h-full flex items-center justify-end w-full px-4 md:px-8">
-                 {/* This renders the right side of the Navbar transparently over the header. But it's better to just render the standard Navbar component and let it handle the top bar! */}
-               </div>
-             </div>
+          <div className="flex items-center gap-3">
+            <HomeButton />
+            <UserMenu />
           </div>
         </header>
 
