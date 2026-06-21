@@ -225,10 +225,10 @@ const Signup = () => {
       login(data.user, data.token);
 
       // Redirect
-      if (data.user.role === "student") {
-        navigate("/dashboard");
+      if (data.user.role === "teacher") {
+        navigate("/teacher");
       } else {
-        navigate("/dashboard");
+        navigate("/student");
       }
     } catch (err) {
       console.error("Signup error:", err);

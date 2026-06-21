@@ -55,7 +55,7 @@ const TeacherDashboard = () => {
         description="Track students, applications, earnings, and messages from one workspace."
         action={
           <Link
-            to="/dashboard/messages"
+            to="/teacher/messages"
             className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white"
           >
             Open Messages

@@ -9,6 +9,10 @@ import { SavedJob } from "./savedJobModel.js";
 import { SavedTeacher } from "./savedTeacherModel.js";
 import { Notification } from "./notificationModel.js";
 import { Message } from "./messageModel.js";
+import { EmailToken } from "./emailTokenModel.js";
+import { FileRecord } from "./fileModel.js";
+import { VerificationRequest } from "./verificationRequestModel.js";
+import { Transaction } from "./transactionModel.js";
 
 // TEACHER <-> COURSE
 Teacher.hasMany(Course, {
@@ -155,6 +159,35 @@ Notification.belongsTo(Teacher, {
   constraints: false,
 });
 
+// VERIFICATION REQUESTS
+Teacher.hasOne(VerificationRequest, {
+  foreignKey: "teacherId",
+  as: "verificationRequest",
+});
+VerificationRequest.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
+// FILE RECORDS
+Student.hasMany(FileRecord, {
+  foreignKey: "ownerId",
+  as: "files",
+  constraints: false,
+});
+Teacher.hasMany(FileRecord, {
+  foreignKey: "ownerId",
+  as: "files",
+  constraints: false,
+});
+FileRecord.belongsTo(Student, {
+  foreignKey: "ownerId",
+  constraints: false,
+});
+FileRecord.belongsTo(Teacher, {
+  foreignKey: "ownerId",
+  constraints: false,
+});
 
 // EXPORT ALL MODELS
 export {
@@ -169,4 +202,8 @@ export {
   SavedTeacher,
   Notification,
   Message,
+  EmailToken,
+  FileRecord,
+  VerificationRequest,
+  Transaction,
 };

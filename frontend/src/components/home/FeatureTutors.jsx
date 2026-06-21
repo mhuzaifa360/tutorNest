@@ -83,7 +83,7 @@ function FeaturedTutors() {
                     PKR {tutor.hourlyFee || "—"}/hour
                   </Typography>
 
-                  <Link to={`/dashboard/tutors/${tutor.id}`} className="w-full">
+                  <Link to={`/teachers/${tutor.id}`} className="w-full">
                     <Btn variant="blue" className="w-full">
                       View Profile
                     </Btn>

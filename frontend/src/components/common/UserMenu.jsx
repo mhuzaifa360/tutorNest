@@ -9,9 +9,9 @@ const getRolePaths = (role) => {
   const normalized = (role || "student").toLowerCase();
   if (normalized === "teacher") {
     return {
-      profile: "/dashboard/profile",
-      dashboard: "/dashboard",
-      settings: "/dashboard/settings",
+      profile: "/teacher/profile",
+      dashboard: "/teacher",
+      settings: "/teacher/settings",
     };
   }
 
@@ -24,9 +24,9 @@ const getRolePaths = (role) => {
   }
 
   return {
-    profile: "/dashboard/profile",
-    dashboard: "/dashboard",
-    settings: "/dashboard/settings",
+    profile: "/student/profile",
+    dashboard: "/student",
+    settings: "/student/settings",
   };
 };
 

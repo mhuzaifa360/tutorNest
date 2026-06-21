@@ -22,6 +22,10 @@ import profileRoutes from "./routes/profileRoutes.js";
 import studentModuleRoutes from "./routes/studentModuleRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import verificationRoutes from "./routes/verificationRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 // DB CONNECTION
 import { connectDB, sequelize } from "./config/database.js";
@@ -67,6 +71,10 @@ app.use(`${API_PREFIX}/profile`, profileRoutes); // profile routes
 app.use(`${API_PREFIX}/student`, studentModuleRoutes); // student module routes
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes); // unified dashboard routes
 app.use(`${API_PREFIX}/messages`, messageRoutes); // unified messaging routes
+app.use(`${API_PREFIX}/email`, emailRoutes); // email service routes
+app.use(`${API_PREFIX}/upload`, uploadRoutes); // upload routes
+app.use(`${API_PREFIX}/verification`, verificationRoutes); // verification workflow routes
+app.use(`${API_PREFIX}/payments`, paymentRoutes); // payment service routes
  
 // HEALTH CHECK
 app.get("/", (req, res) => {

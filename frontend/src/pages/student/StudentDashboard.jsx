@@ -55,7 +55,7 @@ function StudentDashboard() {
         description="Track courses, tutors, jobs, applications, and messages from one workspace."
         action={
           <Link
-            to="/dashboard/tutors"
+            to="/student/tutors"
             className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
           >
             Find Tutors
@@ -74,7 +74,7 @@ function StudentDashboard() {
         <Card className="xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-bold text-gray-950 dark:text-white">Recommended Teachers</h2>
-            <Link to="/dashboard/tutors" className="text-sm font-semibold text-blue-600">
+            <Link to="/student/tutors" className="text-sm font-semibold text-blue-600">
               View all
             </Link>
           </div>
@@ -83,7 +83,7 @@ function StudentDashboard() {
               {data.recommendedTeachers.map((teacher) => (
                 <Link
                   key={teacher.id}
-                  to={`/dashboard/tutors/${teacher.id}`}
+                  to={`/student/tutors/${teacher.id}`}
                   className="rounded-lg border border-gray-200 p-4 transition hover:border-blue-300 dark:border-slate-800"
                 >
                   <p className="font-semibold text-gray-950 dark:text-white">

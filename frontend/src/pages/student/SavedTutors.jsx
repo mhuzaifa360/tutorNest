@@ -38,7 +38,7 @@ function SavedTutors() {
               <p className="mt-1 text-sm text-gray-500">{teacher.qualification || "Teacher"} • {teacher.experience || 0} yrs</p>
               <p className="mt-2 text-sm">PKR {teacher.hourlyFee || 0}/hour</p>
               <div className="mt-4 flex gap-2">
-                <Link to={`/dashboard/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View</Link>
+                <Link to={`/student/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View</Link>
                 <button onClick={() => remove(teacher.id)} className="rounded-lg border px-3 py-2 text-sm font-semibold dark:border-slate-700">Remove</button>
               </div>
             </Card>

@@ -1,8 +1,8 @@
 import { useAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { getToken } from "../services/authService";
 
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ requiredRole }) => {
   const { user } = useAuth();
   const token = getToken();
 
@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

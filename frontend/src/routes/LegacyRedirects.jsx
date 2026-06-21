@@ -1,4 +1,5 @@
 import { Navigate, useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const studentRouteMap = {
   dashboard: "",
@@ -22,10 +23,10 @@ export function LegacyStudentRedirect() {
   const target = studentRouteMap[segment];
 
   if (target === undefined) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/student" replace />;
   }
 
-  return <Navigate to={target ? `/dashboard/${target}` : "/dashboard"} replace />;
+  return <Navigate to={target ? `/student/${target}` : "/student"} replace />;
 }
 
 export function LegacyTeacherRedirect() {
@@ -33,5 +34,22 @@ export function LegacyTeacherRedirect() {
   const rest = params["*"] || "";
   const segment = rest.split("/")[0] || "dashboard";
   const target = segment === "dashboard" ? "" : segment;
-  return <Navigate to={target ? `/dashboard/${target}` : "/dashboard"} replace />;
+  return <Navigate to={target ? `/teacher/${target}` : "/teacher"} replace />;
+}
+
+export function LegacyDashboardRedirect() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const role = user.role?.toLowerCase();
+  if (role === "teacher") {
+    return <Navigate to="/teacher" replace />;
+  }
+  if (role === "admin") {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+  return <Navigate to="/student" replace />;
 }

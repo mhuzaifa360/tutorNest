@@ -7,15 +7,14 @@ import Signup from "../pages/Signup";
 import Login from "../pages/Login";
 import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
+import Jobs from "../pages/Jobs";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 
 import ProtectedRoute from "./ProtectedRoute";
-import AppLayout from "../components/layout/AppLayout";
-import AdminLayout from "../layouts/AdminLayout";
 import MainLayout from "../layouts/MainLayout";
 import DashboardHome from "../pages/dashboard/DashboardHome";
-import { LegacyStudentRedirect, LegacyTeacherRedirect } from "./LegacyRedirects";
+import { LegacyStudentRedirect, LegacyTeacherRedirect, LegacyDashboardRedirect } from "./LegacyRedirects";
 
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import FindTutors from "../pages/student/FindTutors";
@@ -41,12 +40,14 @@ import AdminSettings from "../pages/admin/Settings";
 
 function AppRoutes() {
   return (
-    <AppLayout>
-      <Routes>
+    <Routes>
+      <Route element={<MainLayout />}>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
         <Route path="/teachers" element={<Teachers />} />
+        <Route path="/teachers/:id" element={<TeacherProfile />} />
         <Route path="/courses" element={<Courses />} />
+        <Route path="/jobs" element={<Jobs />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
 
@@ -54,143 +55,57 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* UNIFIED DASHBOARD SHELL */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardHome />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="settings" element={<Settings />} />
-
-          <Route
-            path="tutors"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <FindTutors />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="tutors/:id"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <TeacherProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="saved-tutors"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <SavedTutors />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="courses"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="my-courses"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <MyCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="jobs"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <TuitionJobs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="applications"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentApplications />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="notifications"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentNotifications />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reviews"
-            element={
-              <ProtectedRoute requiredRole="student">
-                <StudentReviews />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="students"
-            element={
-              <ProtectedRoute requiredRole="teacher">
-                <TeacherDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="earnings"
-            element={
-              <ProtectedRoute requiredRole="teacher">
-                <TeacherDashboard />
-              </ProtectedRoute>
-            }
-          />
+        {/* STUDENT DASHBOARD ROUTES */}
+        <Route element={<ProtectedRoute requiredRole="student" />}>
+          <Route path="/student" element={<DashboardHome />} />
+          <Route path="/student/messages" element={<Messages />} />
+          <Route path="/student/profile" element={<Profile />} />
+          <Route path="/student/settings" element={<Settings />} />
+          <Route path="/student/tutors" element={<FindTutors />} />
+          <Route path="/student/tutors/:id" element={<TeacherProfile />} />
+          <Route path="/student/saved-tutors" element={<SavedTutors />} />
+          <Route path="/student/courses" element={<StudentCourses />} />
+          <Route path="/student/my-courses" element={<MyCourses />} />
+          <Route path="/student/jobs" element={<TuitionJobs />} />
+          <Route path="/student/applications" element={<StudentApplications />} />
+          <Route path="/student/notifications" element={<StudentNotifications />} />
+          <Route path="/student/reviews" element={<StudentReviews />} />
         </Route>
 
-        {/* LEGACY REDIRECTS */}
-        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
-        <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
+        {/* TEACHER DASHBOARD ROUTES */}
+        <Route element={<ProtectedRoute requiredRole="teacher" />}>
+          <Route path="/teacher" element={<TeacherDashboard />} />
+          <Route path="/teacher/messages" element={<Messages />} />
+          <Route path="/teacher/profile" element={<Profile />} />
+          <Route path="/teacher/settings" element={<Settings />} />
+          <Route path="/teacher/students" element={<TeacherDashboard />} />
+          <Route path="/teacher/courses" element={<StudentCourses />} />
+          <Route path="/teacher/earnings" element={<TeacherDashboard />} />
+        </Route>
+
+        {/* ADMIN ROUTES */}
+        <Route element={<ProtectedRoute requiredRole="admin" />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/students" element={<AdminStudents />} />
+          <Route path="/admin/teachers" element={<AdminTeachers />} />
+          <Route path="/admin/courses" element={<AdminCourses />} />
+          <Route path="/admin/jobs" element={<AdminJobs />} />
+          <Route path="/admin/applications" element={<AdminApplications />} />
+          <Route path="/admin/reviews" element={<AdminReviews />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/profile" element={<Profile />} />
+        </Route>
+
+        {/* LEGACY ROUTES */}
+        <Route path="/dashboard/*" element={<LegacyDashboardRedirect />} />
+        <Route path="/profile" element={<Navigate to="/student/profile" replace />} />
+        <Route path="/settings" element={<Navigate to="/student/settings" replace />} />
         <Route path="/student/*" element={<LegacyStudentRedirect />} />
         <Route path="/teacher/*" element={<LegacyTeacherRedirect />} />
-
-        {/* ADMIN AREA */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="students" element={<AdminStudents />} />
-          <Route path="teachers" element={<AdminTeachers />} />
-          <Route path="courses" element={<AdminCourses />} />
-          <Route path="jobs" element={<AdminJobs />} />
-          <Route path="applications" element={<AdminApplications />} />
-          <Route path="reviews" element={<AdminReviews />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="settings" element={<AdminSettings />} />
-          <Route path="profile" element={<Profile />} />
-        </Route>
-
-        <Route path="/teacher" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/student" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </AppLayout>
+      </Route>
+    </Routes>
   );
 }
 

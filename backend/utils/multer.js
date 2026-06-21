@@ -6,11 +6,28 @@ const uploadDir = process.env.UPLOAD_DIR || "uploads";
 // STORAGE CONFIG
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (req.baseUrl.includes("student")) {
-      cb(null, `${uploadDir}/students`);
-    } else {
-      cb(null, `${uploadDir}/tutors`);
+    const category = req.uploadCategory;
+    if (category === "profile") {
+      return cb(null, `${uploadDir}/profile`);
     }
+
+    if (category === "document") {
+      return cb(null, `${uploadDir}/documents`);
+    }
+
+    if (req.user?.role === "student") {
+      return cb(null, `${uploadDir}/students`);
+    }
+
+    if (req.user?.role === "teacher") {
+      return cb(null, `${uploadDir}/tutors`);
+    }
+
+    if (req.baseUrl.includes("student")) {
+      return cb(null, `${uploadDir}/students`);
+    }
+
+    return cb(null, `${uploadDir}/tutors`);
   },
 
   filename: (req, file, cb) => {

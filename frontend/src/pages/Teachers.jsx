@@ -139,7 +139,7 @@ function Teachers() {
                 <Typography className="font-semibold text-textBlack dark:text-white">
                   PKR {teacher.hourlyFee || teacher.hourlyFee === 0 ? teacher.hourlyFee : "-"}/hour
                 </Typography>
-                <Link to={`/dashboard/tutors/${teacher.id}`} className="w-full">
+                <Link to={`/teachers/${teacher.id}`} className="w-full">
                   <Btn variant="blue" className="w-full">
                     View Profile
                   </Btn>
