@@ -5,7 +5,8 @@ import Sidebar from "../components/layout/Sidebar";
 
 export default function MainLayout() {
   const location = useLocation();
-  const showSidebar = /^(?:\/student|\/teacher|\/admin)(?:\/|$)/.test(location.pathname);
+  const isDashboard = /^(?:\/student|\/teacher|\/admin)(?:\/|$)/.test(location.pathname);
+  const showSidebar = isDashboard;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
@@ -23,7 +24,7 @@ export default function MainLayout() {
         </main>
       </div>
 
-      <Footer />
+      {!isDashboard && <Footer />}
     </div>
   );
 }

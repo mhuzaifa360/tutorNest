@@ -6,14 +6,14 @@ import Footer from "./Footer";
 function AppLayout({ children }) {
   const location = useLocation();
 
-  // Check if current route is a dashboard route
-  const isDashboard = /^\/dashboard(\/|$)/.test(location.pathname);
-  const isAdminArea = /^\/admin(\/|$)/.test(location.pathname);
+  const isDashboard =
+    location.pathname.startsWith("/student") ||
+    location.pathname.startsWith("/teacher") ||
+    location.pathname.startsWith("/admin");
 
   const hideLayout =
     location.pathname === "/login" ||
     location.pathname === "/signup" ||
-    isAdminArea ||
     isDashboard;
 
   if (hideLayout) {
@@ -22,7 +22,7 @@ function AppLayout({ children }) {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-gray-900 dark:text-white font-inter overflow-hidden transition-colors duration-300">
-      {/* Sidebar (Only visible on student/teacher dashboard routes) */}
+      {/* Sidebar (Only visible on student/teacher/admin dashboard routes) */}
       {isDashboard && <Sidebar />}
 
       {/* Main Content Area */}
@@ -33,7 +33,6 @@ function AppLayout({ children }) {
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto w-full relative px-4 py-8 pb-24 md:px-6 lg:px-8">
           {children}
-          {/* Footer (Only visible on non-dashboard routes) */}
           {!isDashboard && <Footer />}
         </main>
       </div>
