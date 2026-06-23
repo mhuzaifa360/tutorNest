@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
@@ -117,8 +117,98 @@ const Signup = () => {
     cnic: "",
   });
 
+  // File states
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+
+  const [docFiles, setDocFiles] = useState({
+    cnicFront: null,
+    cnicBack: null,
+    degree: null,
+    certificate: null,
+  });
+
+  const [docPreviews, setDocPreviews] = useState({});
+  const [uploadStatus, setUploadStatus] = useState({ profile: "idle", cnicFront: "idle", cnicBack: "idle", degree: "idle", certificate: "idle" });
+
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // -----------------
+  // File handlers
+  // -----------------
+  useEffect(() => {
+    if (!profileImageFile) {
+      setProfilePreview(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(profileImageFile);
+    setProfilePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [profileImageFile]);
+
+  useEffect(() => {
+    // create previews for doc files
+    const keys = Object.keys(docFiles);
+    keys.forEach((k) => {
+      const f = docFiles[k];
+      if (f) {
+        const u = URL.createObjectURL(f);
+        setDocPreviews((prev) => ({ ...prev, [k]: u }));
+      } else {
+        setDocPreviews((prev) => ({ ...prev, [k]: null }));
+      }
+    });
+    return () => {
+      Object.values(docPreviews).forEach((u) => u && URL.revokeObjectURL(u));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docFiles]);
+
+  const validateFile = (file, allowed = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]) => {
+    if (!file) return "File missing";
+    if (!allowed.includes(file.type)) return "Unsupported file type";
+    if (file.size > 5 * 1024 * 1024) return "File exceeds 5MB";
+    return null;
+  };
+
+  const handleProfileImageChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const err = validateFile(f, ["image/jpeg", "image/png", "image/jpg"]);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setProfileImageFile(f);
+    setError("");
+  };
+
+  const removeProfileImage = () => {
+    setProfileImageFile(null);
+    setProfilePreview(null);
+  };
+
+  const handleDocChange = (e) => {
+    const name = e.target.name;
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const err = validateFile(f, ["image/jpeg", "image/png", "image/jpg", "application/pdf"]);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setDocFiles((prev) => ({ ...prev, [name]: f }));
+    setUploadStatus((s) => ({ ...s, [name]: "ready" }));
+    setError("");
+  };
+
+  const removeDocFile = (key) => {
+    setDocFiles((prev) => ({ ...prev, [key]: null }));
+    setDocPreviews((p) => ({ ...p, [key]: null }));
+    setUploadStatus((s) => ({ ...s, [key]: "idle" }));
+  };
 
   // Input change handler
   const handleChange = (e) => {
@@ -172,52 +262,50 @@ const Signup = () => {
       return;
     }
 
-    const endpoint =
-      role === "student"
-        ? "http://localhost:5000/v1/auth/student/signup"
-        : "http://localhost:5000/v1/auth/teacher/signup";
-
-    const payload =
-      role === "student"
-        ? {
-            firstName: form.firstName,
-            lastName: form.lastName,
-            email: form.email,
-            password: form.password,
-            mobile: form.mobile,
-            gender: form.gender,
-            province: form.province,
-            city: form.city,
-            classLevel: form.classLevel,
-            subjects: form.subjects,
-          }
-        : {
-            firstName: form.firstName,
-            lastName: form.lastName,
-            email: form.email,
-            password: form.password,
-            mobile: form.mobile,
-            gender: form.gender,
-            province: form.province,
-            city: form.city,
-            qualification: form.qualification,
-            experience: Number(form.experience),
-            subjects: form.subjects,
-            teachingMode: form.teachingMode,
-            hourlyFee: Number(form.hourlyFee),
-            bio: form.bio,
-            cnic: form.cnic.replace(/-/g, ""), // send digits only
-          };
+    const endpoint = role === "student" ? 
+      "http://localhost:5000/v1/auth/student/signup" :
+      "http://localhost:5000/v1/auth/teacher/signup";
 
     try {
       setLoading(true);
 
+      // Build FormData for multipart upload (supports profileImage and teacher docs)
+      const fd = new FormData();
+      fd.append("firstName", form.firstName);
+      fd.append("lastName", form.lastName);
+      fd.append("email", form.email);
+      fd.append("password", form.password);
+      fd.append("mobile", form.mobile);
+      fd.append("gender", form.gender);
+      fd.append("province", form.province);
+      fd.append("city", form.city);
+      fd.append("subjects", JSON.stringify(form.subjects));
+
+      if (profileImageFile) {
+        fd.append("profileImage", profileImageFile);
+      }
+
+      if (role === "student") {
+        fd.append("classLevel", form.classLevel);
+      }
+
+      if (role === "teacher") {
+        fd.append("qualification", form.qualification);
+        fd.append("experience", String(form.experience));
+        fd.append("teachingMode", form.teachingMode);
+        fd.append("hourlyFee", String(form.hourlyFee));
+        fd.append("bio", form.bio);
+        fd.append("cnic", form.cnic.replace(/-/g, ""));
+
+        // Attach teacher document files (if provided)
+        ["cnicFront", "cnicBack", "degree", "certificate"].forEach((key) => {
+          if (docFiles[key]) fd.append(key, docFiles[key]);
+        });
+      }
+
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: fd,
       });
 
       let data;
@@ -272,11 +360,11 @@ const Signup = () => {
 
         {/* TITLE */}
         <div className="text-center flex flex-col gap-2">
-          <Typography variant="h2" className="font-bold text-textBlack dark:text-white">
-            Create Account
+          <Typography variant="h2" className="font-extrabold text-2xl text-textBlack dark:text-white">
+            Create Your TutorNest Account
           </Typography>
           <Typography variant="h6" className="text-textGrey dark:text-gray-400">
-            Join TutorNest as a Student or Teacher
+            Join as a Student or Tutor and start your learning journey today.
           </Typography>
         </div>
 
@@ -471,6 +559,23 @@ const Signup = () => {
                   </option>
                 ))}
               </select>
+              {/* PROFILE IMAGE UPLOAD (Student) */}
+              <div className="mt-3">
+                <label className={labelClass}>Profile Image</label>
+                <div className="mt-2 flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="file" accept="image/*" onChange={handleProfileImageChange} className="hidden" />
+                    <div className="rounded-lg border px-3 py-2 text-sm bg-white dark:bg-slate-800">Upload Image</div>
+                  </label>
+                  {profilePreview && (
+                    <div className="relative">
+                      <img src={profilePreview} alt="preview" className="h-16 w-16 rounded-full object-cover" />
+                      <button type="button" onClick={removeProfileImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 text-xs">×</button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-textGrey mt-2">Supported: JPG, PNG, JPEG. Max 5MB.</p>
+              </div>
             </div>
           )}
 
@@ -582,6 +687,60 @@ const Signup = () => {
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-textBlack dark:text-white outline-none focus:border-primary transition-colors text-sm resize-none"
                 />
+              </div>
+
+              {/* PROFILE IMAGE UPLOAD (Teacher) */}
+              <div className="mt-3">
+                <label className={labelClass}>Profile Image</label>
+                <div className="mt-2 flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input name="profileImage" type="file" accept="image/*" onChange={handleProfileImageChange} className="hidden" />
+                    <div className="rounded-lg border px-3 py-2 text-sm bg-white dark:bg-slate-800">Upload Image</div>
+                  </label>
+                  {profilePreview && (
+                    <div className="relative">
+                      <img src={profilePreview} alt="preview" className="h-16 w-16 rounded-full object-cover" />
+                      <button type="button" onClick={removeProfileImage} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 text-xs">×</button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-textGrey mt-2">Supported: JPG, PNG, JPEG. Max 5MB.</p>
+              </div>
+
+              {/* DOCUMENTS UPLOAD (Teacher) */}
+              <div className="mt-4 border-t pt-4">
+                <label className={labelClass}>Upload Documents</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                  {[
+                    { key: "cnicFront", label: "CNIC Front" },
+                    { key: "cnicBack", label: "CNIC Back" },
+                    { key: "degree", label: "Degree" },
+                    { key: "certificate", label: "Certificate" },
+                  ].map((d) => (
+                    <div key={d.key} className="flex flex-col gap-2">
+                      <label className="text-sm font-medium">{d.label}</label>
+                      <div className="flex items-center gap-2">
+                        <input type="file" name={d.key} accept="image/*,application/pdf" onChange={handleDocChange} className="hidden" id={`file-${d.key}`} />
+                        <label htmlFor={`file-${d.key}`} className="rounded-lg border px-3 py-2 text-sm cursor-pointer bg-white dark:bg-slate-800">Choose file</label>
+                        {docPreviews[d.key] ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-14 w-14 overflow-hidden rounded-md border bg-white dark:bg-slate-800 flex items-center justify-center text-xs text-textGrey">
+                              {docFiles[d.key] && docFiles[d.key].type === "application/pdf" ? (
+                                <span>PDF</span>
+                              ) : (
+                                <img src={docPreviews[d.key]} alt={d.label} className="h-14 w-14 object-cover" />
+                              )}
+                            </div>
+                            <button type="button" onClick={() => removeDocFile(d.key)} className="text-sm text-red-500">Remove</button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-textGrey">No file selected</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-textGrey">Supports JPG, PNG, PDF. Max 5MB.</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </>
           )}

@@ -51,7 +51,7 @@ function Navbar() {
           TutorNest
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden md:flex items-center gap-1">
           {links.map((item) => {
             const active = location.pathname === item.path;
             return (
@@ -94,7 +94,7 @@ function Navbar() {
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 md:hidden"
             onClick={() => setIsOpen((prev) => !prev)}
             aria-label="Open navigation menu"
           >
@@ -104,7 +104,7 @@ function Navbar() {
       </div>
 
       {isOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950 lg:hidden">
+        <div className="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
           <div className="flex flex-col gap-2">
             {links.map((item) => (
               <Link

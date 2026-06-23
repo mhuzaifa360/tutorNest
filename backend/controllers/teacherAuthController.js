@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Teacher } from "../models/index.js";
+import { FileRecord } from "../models/index.js";
 
 // =========================
 // TEACHER SIGNUP
@@ -103,6 +104,35 @@ export const signupTeacher = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
+    // If files were uploaded (documents), persist FileRecord entries
+    try {
+      const files = req.files || {};
+      const entries = [];
+      ["cnicFront", "cnicBack", "degree", "certificate"].forEach((key) => {
+        const fileArr = files[key];
+        if (fileArr && fileArr.length) {
+          const f = fileArr[0];
+          entries.push({
+            ownerId: newTeacher.id,
+            ownerRole: "teacher",
+            type: "document",
+            entityId: null,
+            url: `/${f.destination.replace(process.cwd(), "").replace(/\\\\/g, "/").replace(/^\//, "")}/${f.filename}`.replace(/\\//g, "/"),
+            filename: f.filename,
+            originalName: f.originalname,
+            mimeType: f.mimetype,
+            size: f.size,
+          });
+        }
+      });
+
+      if (entries.length) {
+        await FileRecord.bulkCreate(entries);
+      }
+    } catch (err) {
+      console.warn("Failed to save teacher document records:", err.message);
+    }
+
     const safeUser = newTeacher.toJSON();
     const responseUser = {
       id: safeUser.id,
@@ -110,6 +140,7 @@ export const signupTeacher = async (req, res) => {
       lastName: safeUser.lastName,
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "teacher",
+      profileImage: safeUser.profileImage || null,
     };
 
     return res.status(201).json({
@@ -179,6 +210,7 @@ export const loginTeacher = async (req, res) => {
       lastName: safeUser.lastName,
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "teacher",
+      profileImage: safeUser.profileImage || null,
     };
 
     return res.status(200).json({

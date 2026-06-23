@@ -107,16 +107,16 @@ const Login = () => {
         <div className="flex flex-col gap-2 text-center">
           <Typography
             variant="h2"
-            className="font-bold text-textBlack dark:text-white"
+            className="font-extrabold text-2xl text-textBlack dark:text-white"
           >
-            Welcome Back
+            Welcome to TutorNest
           </Typography>
 
           <Typography
             variant="h6"
             className="text-textGrey dark:text-gray-400"
           >
-            Sign in to your TutorNest account
+            Find the perfect tutor, explore courses, and grow your learning journey.
           </Typography>
         </div>
 

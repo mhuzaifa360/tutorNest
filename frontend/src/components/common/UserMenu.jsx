@@ -47,6 +47,13 @@ const UserMenu = ({ className = "" }) => {
   const initials = user?.initials || getInitials(user?.firstName, user?.lastName);
   const profileImageUrl = getImageUrl(user?.profileImage);
 
+  const roleBg = (() => {
+    const r = (user?.role || "student").toLowerCase();
+    if (r === "teacher") return "bg-green-600";
+    if (r === "admin") return "bg-purple-600";
+    return "bg-blue-600";
+  })();
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -92,7 +99,7 @@ const UserMenu = ({ className = "" }) => {
         onClick={() => setIsOpen((current) => !current)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-slate-500/10 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg shadow-slate-500/10 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 ${roleBg} focus:ring-offset-2`}
       >
         {profileImageUrl ? (
           <img

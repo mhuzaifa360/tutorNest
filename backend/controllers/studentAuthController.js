@@ -96,6 +96,7 @@ export const signupStudent = async (req, res) => {
       lastName: safeUser.lastName,
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "student",
+      profileImage: safeUser.profileImage || null,
     };
 
     return res.status(201).json({
@@ -164,6 +165,7 @@ export const loginStudent = async (req, res) => {
       lastName: safeUser.lastName,
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "student",
+      profileImage: safeUser.profileImage || null,
     };
 
     return res.status(200).json({

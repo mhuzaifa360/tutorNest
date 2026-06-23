@@ -6,6 +6,12 @@ const uploadDir = process.env.UPLOAD_DIR || "uploads";
 // STORAGE CONFIG
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Route by fieldname when available
+    const field = file.fieldname;
+    if (field === "profileImage") return cb(null, `${uploadDir}/profile`);
+    if (["cnicFront", "cnicBack", "degree", "certificate"].includes(field)) return cb(null, `${uploadDir}/documents`);
+
+    // Fallbacks
     const category = req.uploadCategory;
     if (category === "profile") {
       return cb(null, `${uploadDir}/profile`);
@@ -23,7 +29,7 @@ const storage = multer.diskStorage({
       return cb(null, `${uploadDir}/tutors`);
     }
 
-    if (req.baseUrl.includes("student")) {
+    if (req.baseUrl && req.baseUrl.includes("student")) {
       return cb(null, `${uploadDir}/students`);
     }
 
@@ -43,23 +49,24 @@ const storage = multer.diskStorage({
 
 // FILE FILTER
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpg|jpeg|png|webp/;
+  const docFields = ["cnicFront", "cnicBack", "degree", "certificate"];
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype;
 
-  const extName = allowedTypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
-
-  const mimeType = allowedTypes.test(file.mimetype);
-
-  if (extName && mimeType) {
-    cb(null, true);
-  } else {
-    cb(
-      new Error(
-        "Only jpg, jpeg, png and webp files are allowed"
-      )
-    );
+  // Allow images for profile and images/pdf for documents
+  if (docFields.includes(file.fieldname)) {
+    if ([".jpg", ".jpeg", ".png", ".pdf"].includes(ext) && (mime.startsWith("image/") || mime === "application/pdf")) {
+      return cb(null, true);
+    }
+    return cb(new Error("Only jpg, jpeg, png and pdf files are allowed for documents"));
   }
+
+  // Default: accept common image types
+  if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext) && mime.startsWith("image/")) {
+    return cb(null, true);
+  }
+
+  return cb(new Error("Only jpg, jpeg, png and webp files are allowed"));
 };
 
 // MULTER INSTANCE

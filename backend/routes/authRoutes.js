@@ -36,7 +36,18 @@ router.post("/student/login", loginStudent);
 
 // TEACHER AUTH (Public)
 // Role: Any (Public)
-router.post("/teacher/signup", upload.single("profileImage"), signupTeacher);
+// Accept multiple fields on teacher signup: profileImage + documents
+router.post(
+  "/teacher/signup",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "cnicFront", maxCount: 1 },
+    { name: "cnicBack", maxCount: 1 },
+    { name: "degree", maxCount: 1 },
+    { name: "certificate", maxCount: 1 },
+  ]),
+  signupTeacher
+);
 // Role: Any (Public)
 router.post("/teacher/login", loginTeacher);
 
