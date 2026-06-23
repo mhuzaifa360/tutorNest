@@ -37,39 +37,72 @@ const CLASS_LEVELS = [
   "Masters",
 ];
 
-const SUBJECTS = [
-  "Mathematics",
-  "English",
-  "Urdu",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Computer Science",
-  "Islamiat",
-  "Pakistan Studies",
-  "General Science",
-  "Accounting",
-  "Economics",
-  "Statistics",
-  "Business Studies",
-  "Physical Education",
-  "Web Development",
-  "Networking",
-  "Database Management",
-  "Software Engineering",
-  "Machine Learning",
-  "Artificial Intelligence",
-  "Data Science",
-  "Robotics",
-  "Electrical Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
-  "Environmental Science",
-  "Law",
-  "Medicine",
-  "Nursing",
-  "Pharmacy",
-  "Other",
+const SUBJECT_CATEGORIES = [
+  {
+    name: "School Subjects",
+    subjects: [
+      "Mathematics",
+      "English",
+      "Urdu",
+      "Physics",
+      "Chemistry",
+      "Biology",
+      "General Science",
+      "Islamiat",
+      "Pakistan Studies",
+      "Physical Education",
+    ],
+  },
+  {
+    name: "IT & Computer Science",
+    subjects: [
+      "Computer Science",
+      "Web Development",
+      "Networking",
+      "Database Management",
+      "Software Engineering",
+    ],
+  },
+  {
+    name: "AI & Data Science",
+    subjects: [
+      "Machine Learning",
+      "Artificial Intelligence",
+      "Data Science",
+      "Robotics",
+    ],
+  },
+  {
+    name: "Business & Commerce",
+    subjects: [
+      "Accounting",
+      "Economics",
+      "Statistics",
+      "Business Studies",
+      "Law",
+    ],
+  },
+  {
+    name: "Engineering",
+    subjects: [
+      "Electrical Engineering",
+      "Mechanical Engineering",
+      "Civil Engineering",
+      "Environmental Science",
+    ],
+  },
+  {
+    name: "Medical",
+    subjects: [
+      "Medicine",
+      "Nursing",
+      "Pharmacy",
+    ],
+  },
+  {
+    name: "Other",
+    subjects: ["Other"],
+  },
 ];
 
 const QUALIFICATIONS = [
@@ -116,6 +149,7 @@ const Signup = () => {
     bio: "",
     cnic: "",
   });
+  const [selectedCategory, setSelectedCategory] = useState(SUBJECT_CATEGORIES[0].name);
 
   // File states
   const [profileImageFile, setProfileImageFile] = useState(null);
@@ -227,6 +261,11 @@ const Signup = () => {
           : [...prev.subjects, subject],
       };
     });
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    if (error) setError("");
   };
 
   // CNIC formatter (auto-add dashes: 00000-0000000-0)
@@ -745,34 +784,70 @@ const Signup = () => {
             </>
           )}
 
-          {/* SUBJECTS (multi-select chips) */}
-          <div className="flex flex-col gap-2">
+          {/* SUBJECTS (categories + multi-select checkboxes) */}
+          <div className="flex flex-col gap-4">
             <label className={labelClass}>
               Subjects * <span className="text-textGrey font-normal">(select one or more)</span>
             </label>
-            <div className="flex flex-wrap gap-2">
-              {SUBJECTS.map((subject) => {
-                const isSelected = form.subjects.includes(subject);
-                return (
+
+            <div className="grid gap-3 sm:grid-cols-[1fr_1.5fr] items-start">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-textGrey dark:text-gray-300">Subject Category</label>
+                <select
+                  value={selectedCategory}
+                  onChange={handleCategoryChange}
+                  className={selectClass}
+                >
+                  {SUBJECT_CATEGORIES.map((category) => (
+                    <option key={category.name} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-textGrey dark:text-gray-300">Subjects</label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {SUBJECT_CATEGORIES.find((item) => item.name === selectedCategory)?.subjects.map((subject) => {
+                    const isSelected = form.subjects.includes(subject);
+                    return (
+                      <label
+                        key={subject}
+                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "border-primary bg-primary/10"
+                            : "border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSubjectToggle(subject)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span className="text-sm text-textBlack dark:text-white">{subject}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {form.subjects.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {form.subjects.map((subject) => (
                   <button
                     key={subject}
                     type="button"
                     onClick={() => handleSubjectToggle(subject)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-                      isSelected
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white dark:bg-slate-800 text-textBlack dark:text-gray-300 border-gray-300 dark:border-slate-600 hover:border-primary hover:text-primary"
-                    }`}
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-textBlack dark:bg-slate-700 dark:text-white border border-slate-200 dark:border-slate-600"
                   >
-                    {subject}
+                    <span>{subject}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-300">×</span>
                   </button>
-                );
-              })}
-            </div>
-            {form.subjects.length > 0 && (
-              <p className="text-xs text-primary">
-                Selected: {form.subjects.join(", ")}
-              </p>
+                ))}
+              </div>
             )}
           </div>
 
