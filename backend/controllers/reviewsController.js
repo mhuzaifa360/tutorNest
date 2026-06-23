@@ -65,7 +65,7 @@ export const getReviews = async (req, res) => {
 // GET SINGLE REVIEW
 export const getSingleReview = async (req, res) => {
   try {
-    const review = await Review.findByPk(req.params.id);
+    const review = await Review.findById(req.params.id);
 
     if (!review) {
       return res.status(404).json({
@@ -92,7 +92,7 @@ export const getSingleReview = async (req, res) => {
 export const updateReview = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const review = await Review.findByPk(req.params.id);
+    const review = await Review.findById(req.params.id);
 
     if (!review) {
       return res.status(404).json({
@@ -129,7 +129,7 @@ export const updateReview = async (req, res) => {
 export const deleteReview = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const review = await Review.findByPk(req.params.id);
+    const review = await Review.findById(req.params.id);
 
     if (!review) {
       return res.status(404).json({

@@ -6,7 +6,7 @@ export const recommendTeachers = async (req, res) => {
     const studentId = req.user.id;
     
     // Fetch full student data from database
-    const student = await Student.findByPk(studentId);
+    const student = await Student.findById(studentId);
     
     if (!student) {
       return res.status(404).json({

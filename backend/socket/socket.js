@@ -54,7 +54,7 @@ export const setupSocket = (server) => {
     socket.on("join_room", async ({ conversationId }) => {
       if (!conversationId) return;
 
-      const conversation = await Conversation.findByPk(conversationId);
+      const conversation = await Conversation.findById(conversationId);
       if (!isParticipant(socket.user, conversation)) return;
 
       const room = `chat_${conversationId}`;
@@ -73,7 +73,7 @@ export const setupSocket = (server) => {
           return callback?.({ success: false, message: "Invalid messageType" });
         }
 
-        const conversation = await Conversation.findByPk(conversationId);
+        const conversation = await Conversation.findById(conversationId);
         if (!conversation || !isParticipant(socket.user, conversation)) {
           return callback?.({ success: false, message: "Conversation not found or access denied" });
         }

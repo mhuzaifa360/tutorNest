@@ -92,7 +92,7 @@ export const updateVerificationStatus = async (req, res) => {
       });
     }
 
-    const request = await VerificationRequest.findByPk(req.params.id);
+    const request = await VerificationRequest.findById(req.params.id);
     if (!request) {
       return res.status(404).json({
         success: false,

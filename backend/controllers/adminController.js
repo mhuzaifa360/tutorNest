@@ -103,7 +103,7 @@ export const loginAdmin = async (req, res) => {
 // =======================
 export const getAdminProfile = async (req, res) => {
   try {
-    const admin = await Admin.findByPk(req.user.id, {
+    const admin = await Admin.findById(req.user.id, {
       attributes: { exclude: ["password"] },
     });
 
@@ -125,7 +125,7 @@ export const getAdminProfile = async (req, res) => {
 // =======================
 export const updateAdmin = async (req, res) => {
   try {
-    const admin = await Admin.findByPk(req.user.id);
+    const admin = await Admin.findById(req.user.id);
 
     if (!admin) {
       return res.status(404).json({
@@ -159,7 +159,7 @@ export const updateAdmin = async (req, res) => {
 // =======================
 export const deleteAdmin = async (req, res) => {
   try {
-    const admin = await Admin.findByPk(req.user.id);
+    const admin = await Admin.findById(req.user.id);
 
     if (!admin) {
       return res.status(404).json({
@@ -224,7 +224,7 @@ export const adminLogin = async (req, res) => {
 
 export const approveTeacher = async (req, res) => {
   try {
-    const teacher = await Teacher.findByPk(req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
 
     if (!teacher) {
       return res.status(404).json({
@@ -250,7 +250,7 @@ export const approveTeacher = async (req, res) => {
 
 export const rejectTeacher = async (req, res) => {
   try {
-    const teacher = await Teacher.findByPk(req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
 
     if (!teacher) {
       return res.status(404).json({
@@ -276,7 +276,7 @@ export const rejectTeacher = async (req, res) => {
 
 export const blockStudent = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.params.id);
+    const student = await Student.findById(req.params.id);
 
     if (!student) {
       return res.status(404).json({

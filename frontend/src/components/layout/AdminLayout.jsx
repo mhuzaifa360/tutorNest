@@ -14,7 +14,7 @@ const AdminLayout = () => {
           Admin Panel
         </h2>
 
-        <p className="mb-4">Welcome, {user?.name}</p>
+        <p className="mb-4">Welcome, {user?.firstName || user?.name || "Admin"}</p>
 
         <nav className="flex flex-col gap-3">
           <Link to="/admin/dashboard">Dashboard</Link>

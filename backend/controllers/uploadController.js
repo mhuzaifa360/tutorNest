@@ -90,7 +90,7 @@ export const uploadDocument = async (req, res) => {
 
 export const deleteFile = async (req, res) => {
   try {
-    const fileRecord = await FileRecord.findByPk(req.params.id);
+    const fileRecord = await FileRecord.findById(req.params.id);
     if (!fileRecord) {
       return res.status(404).json({
         success: false,

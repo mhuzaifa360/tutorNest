@@ -45,7 +45,7 @@ export const getJobs = async (req, res) => {
 // GET SINGLE JOB
 export const getSingleJob = async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findById(req.params.id);
 
     if (!job) {
       return res.status(404).json({
@@ -70,7 +70,7 @@ export const getSingleJob = async (req, res) => {
 // UPDATE JOB
 export const updateJob = async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findById(req.params.id);
 
     if (!job) {
       return res.status(404).json({
@@ -106,7 +106,7 @@ export const updateJob = async (req, res) => {
 // DELETE JOB
 export const deleteJob = async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findById(req.params.id);
 
     if (!job) {
       return res.status(404).json({

@@ -8,7 +8,7 @@ export const applyJob = async (req, res) => {
     const { jobId, message } = req.body;
 
     // CHECK JOB EXISTS
-    const job = await Job.findByPk(jobId);
+    const job = await Job.findById(jobId);
 
     if (!job) {
       return res.status(404).json({
@@ -81,7 +81,7 @@ export const getApplications = async (req, res) => {
 // GET SINGLE APPLICATION
 export const getSingleApplication = async (req, res) => {
   try {
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findById(req.params.id);
 
     if (!application) {
       return res.status(404).json({
@@ -107,7 +107,7 @@ export const getSingleApplication = async (req, res) => {
 // UPDATE APPLICATION STATUS
 export const updateApplicationStatus = async (req, res) => {
   try {
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findById(req.params.id);
 
     if (!application) {
       return res.status(404).json({
@@ -155,7 +155,7 @@ export const updateApplicationStatus = async (req, res) => {
 // DELETE APPLICATION
 export const deleteApplication = async (req, res) => {
   try {
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findById(req.params.id);
 
     if (!application) {
       return res.status(404).json({

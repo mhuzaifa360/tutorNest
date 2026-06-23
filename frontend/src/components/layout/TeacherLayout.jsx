@@ -14,7 +14,7 @@ const TeacherLayout = () => {
           Teacher Panel
         </h2>
 
-        <p className="mb-4">Welcome, {user?.name}</p>
+        <p className="mb-4">Welcome, {user?.firstName ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}` : user?.name || "Teacher"}</p>
 
         <nav className="flex flex-col gap-3">
           <Link to="/teacher/dashboard">Dashboard</Link>

@@ -167,7 +167,7 @@ function Profile() {
 
   const fullName =
     `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-    user?.name ||
+    user?.firstName ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}` : user?.name ||
     "TutorNest User";
   const profileImageUrl = getImageUrl(user?.profileImage);
 

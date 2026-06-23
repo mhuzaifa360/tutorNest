@@ -227,7 +227,7 @@ export const setTeacherStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid status" });
     }
 
-    const teacher = await Teacher.findByPk(req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
@@ -252,7 +252,7 @@ export const deleteUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid role" });
     }
 
-    const user = await Model.findByPk(id);
+    const user = await Model.findById(id);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -281,7 +281,7 @@ export const getAdminCourses = async (_req, res) => {
 
 export const updateAdminCourse = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
@@ -294,7 +294,7 @@ export const updateAdminCourse = async (req, res) => {
 
 export const deleteAdminCourse = async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
@@ -316,7 +316,7 @@ export const getAdminJobs = async (_req, res) => {
 
 export const updateAdminJob = async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
@@ -329,7 +329,7 @@ export const updateAdminJob = async (req, res) => {
 
 export const deleteAdminJob = async (req, res) => {
   try {
-    const job = await Job.findByPk(req.params.id);
+    const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
@@ -355,7 +355,7 @@ export const updateAdminApplication = async (req, res) => {
     if (!["pending", "accepted", "rejected"].includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status" });
     }
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findById(req.params.id);
     if (!application) {
       return res.status(404).json({ success: false, message: "Application not found" });
     }
@@ -381,7 +381,7 @@ export const getAdminReviews = async (_req, res) => {
 
 export const deleteAdminReview = async (req, res) => {
   try {
-    const review = await Review.findByPk(req.params.id);
+    const review = await Review.findById(req.params.id);
     if (!review) {
       return res.status(404).json({ success: false, message: "Review not found" });
     }

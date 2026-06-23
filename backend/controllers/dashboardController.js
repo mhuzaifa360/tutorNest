@@ -137,7 +137,7 @@ export const getTeacherDashboard = async (req, res) => {
     if (!assertSelfOrAdmin(req, res, req.params.id)) return;
 
     const teacherId = Number(req.params.id);
-    const teacher = await Teacher.findByPk(teacherId);
+    const teacher = await Teacher.findById(teacherId);
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }

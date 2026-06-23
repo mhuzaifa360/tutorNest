@@ -57,7 +57,7 @@ export const getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const course = await Course.findByPk(id, {
+    const course = await Course.findById(id, {
       include: {
         model: Teacher,
         as: "teacher",
@@ -88,7 +88,7 @@ export const updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const course = await Course.findByPk(id);
+    const course = await Course.findById(id);
 
     if (!course) {
       return res.status(404).json({
@@ -125,7 +125,7 @@ export const deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const course = await Course.findByPk(id);
+    const course = await Course.findById(id);
 
     if (!course) {
       return res.status(404).json({

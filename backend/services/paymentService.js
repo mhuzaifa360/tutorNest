@@ -29,7 +29,7 @@ export const createTransaction = async ({ userId, userRole, amount, currency, de
 };
 
 export const confirmTransaction = async (transactionId) => {
-  const transaction = await Transaction.findByPk(transactionId);
+  const transaction = await Transaction.findById(transactionId);
   if (!transaction) {
     throw new Error("Transaction not found");
   }
@@ -41,7 +41,7 @@ export const confirmTransaction = async (transactionId) => {
 };
 
 export const failTransaction = async (transactionId) => {
-  const transaction = await Transaction.findByPk(transactionId);
+  const transaction = await Transaction.findById(transactionId);
   if (!transaction) {
     throw new Error("Transaction not found");
   }

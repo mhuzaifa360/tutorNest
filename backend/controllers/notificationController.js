@@ -40,7 +40,7 @@ export const getNotifications = async (req, res) => {
 
 export const markAsRead = async (req, res) => {
   try {
-    const notification = await Notification.findByPk(req.params.id);
+    const notification = await Notification.findById(req.params.id);
 
     if (!notification) {
       return res.status(404).json({
@@ -121,7 +121,7 @@ export const markAllAsRead = async (req, res) => {
 
 export const deleteNotification = async (req, res) => {
   try {
-    const notification = await Notification.findByPk(req.params.id);
+    const notification = await Notification.findById(req.params.id);
 
     if (!notification) {
       return res.status(404).json({

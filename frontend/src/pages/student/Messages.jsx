@@ -102,7 +102,7 @@ function Messages() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-gray-950 dark:text-white">
-                        {conversation.name || conversationId}
+                        {conversation.name || conversation.participant?.name || conversationId}
                       </p>
                       {conversation.unread > 0 && (
                         <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
@@ -126,7 +126,7 @@ function Messages() {
 
           <Card className="flex min-h-[32rem] flex-col lg:col-span-2">
             <h2 className="mb-3 font-bold text-gray-950 dark:text-white">
-              {active?.name || "Chat Window"}
+              {active?.name || active?.participant?.name || "Chat Window"}
             </h2>
 
             {active ? (

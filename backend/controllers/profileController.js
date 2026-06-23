@@ -81,7 +81,7 @@ const findCurrentProfile = async (req) => {
 
   if (!Model) return null;
 
-  return Model.findByPk(req.user.id);
+  return Model.findById(req.user.id);
 };
 
 export const getMyProfile = async (req, res) => {

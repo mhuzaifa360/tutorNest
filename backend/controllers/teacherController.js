@@ -69,7 +69,7 @@ export const getTeachers = async (req, res) => {
 // GET SINGLE TEACHER
 export const getSingleTeacher = async (req, res) => {
   try {
-    const teacher = await Teacher.findByPk(req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
 
     if (!teacher) {
       return res.status(404).json({
@@ -103,7 +103,7 @@ export const updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const teacher = await Teacher.findByPk(id);
+    const teacher = await Teacher.findById(id);
 
     if (!teacher) {
       return res.status(404).json({
@@ -139,7 +139,7 @@ export const deleteTeachers = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const teacher = await Teacher.findByPk(id);
+    const teacher = await Teacher.findById(id);
 
     if (!teacher) {
       return res.status(404).json({

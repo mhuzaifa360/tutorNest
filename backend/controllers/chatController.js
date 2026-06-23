@@ -57,7 +57,7 @@ export const createOrGetConversation = async (req, res) => {
       },
     });
 
-    const result = await Conversation.findByPk(conversation.id, {
+    const result = await Conversation.findById(conversation.id, {
       include: [
         { model: Student, as: "student", attributes: ["id", "firstName", "lastName", "profileImage"] },
         { model: Teacher, as: "teacher", attributes: ["id", "firstName", "lastName", "profileImage"] },
@@ -129,7 +129,7 @@ export const getMessages = async (req, res) => {
       return res.status(400).json({ success: false, message: "conversationId is required" });
     }
 
-    const conversation = await Conversation.findByPk(conversationId);
+    const conversation = await Conversation.findById(conversationId);
     if (!conversation || !hasConversationAccess(req.user, conversation)) {
       return res.status(404).json({ success: false, message: "Conversation not found or access denied" });
     }
@@ -168,7 +168,7 @@ export const sendChatMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid messageType" });
     }
 
-    const conversation = await Conversation.findByPk(conversationId);
+    const conversation = await Conversation.findById(conversationId);
     if (!conversation || !hasConversationAccess(req.user, conversation)) {
       return res.status(404).json({ success: false, message: "Conversation not found or access denied" });
     }

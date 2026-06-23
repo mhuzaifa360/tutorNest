@@ -19,7 +19,8 @@ function Users() {
   }, []);
 
   const remove = async (user) => {
-    if (!window.confirm(`Delete ${user.name || user.email}?`)) return;
+    const displayName = user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email;
+    if (!window.confirm(`Delete ${displayName}?`)) return;
     const res = await adminApi.deleteUser(user.role, user.id);
     if (res.ok) load();
   };

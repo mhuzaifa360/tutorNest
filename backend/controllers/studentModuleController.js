@@ -144,7 +144,7 @@ export const browseTeachers = async (req, res) => {
 
 export const getTeacherDetail = async (req, res) => {
   try {
-    const teacher = await Teacher.findByPk(req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
@@ -165,7 +165,7 @@ export const saveTeacher = async (req, res) => {
     if (!teacherId) {
       return res.status(400).json({ success: false, message: "teacherId is required" });
     }
-    const teacher = await Teacher.findByPk(teacherId);
+    const teacher = await Teacher.findById(teacherId);
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
@@ -256,7 +256,7 @@ export const updateStudentApplication = async (req, res) => {
     if (!["accepted", "rejected"].includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status" });
     }
-    const application = await Application.findByPk(req.params.id, {
+    const application = await Application.findById(req.params.id, {
       include: { model: Job, as: "job" },
     });
     if (!application || application.job?.studentId !== req.user.id) {

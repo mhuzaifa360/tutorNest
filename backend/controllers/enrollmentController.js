@@ -39,7 +39,7 @@ export const enrollStudent = async (req, res) => {
 
 export const getMyCourses = async (req, res) => {
   try {
-    const student = await Student.findByPk(req.user.id, {
+    const student = await Student.findById(req.user.id, {
       include: {
         model: Course,
         as: "enrolledCourses",

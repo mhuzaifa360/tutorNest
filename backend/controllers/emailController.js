@@ -70,7 +70,10 @@ export const sendEmailVerification = async (req, res) => {
     );
 
     const name =
-      user.firstName || user.name || `${user.email}` || "TutorNest user";
+      user.firstName ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}` 
+      : user.name 
+      || user.email 
+      || "TutorNest user";
     const template = emailTemplates.verification(name, tokenRecord.token);
 
     await sendEmail({
@@ -120,7 +123,10 @@ export const sendPasswordReset = async (req, res) => {
     );
 
     const name =
-      user.firstName || user.name || `${user.email}` || "TutorNest user";
+      user.firstName ? `${user.firstName}${user.lastName ? " " + user.lastName : ""}` 
+      : user.name 
+      || user.email 
+      || "TutorNest user";
     const template = emailTemplates.resetPassword(name, tokenRecord.token);
 
     await sendEmail({

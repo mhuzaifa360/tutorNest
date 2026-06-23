@@ -69,7 +69,7 @@ export const getSingleStudent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({
@@ -97,7 +97,7 @@ export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({
@@ -133,7 +133,7 @@ export const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const student = await Student.findByPk(id);
+    const student = await Student.findById(id);
 
     if (!student) {
       return res.status(404).json({

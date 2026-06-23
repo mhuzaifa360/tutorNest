@@ -19,15 +19,17 @@ const parseConversationId = (conversationId) => {
 const getParticipant = async (role, id) => {
   const Model = roleModels[role];
   if (!Model) return null;
-  const record = await Model.findByPk(id, {
-    attributes: ["id", "firstName", "lastName", "name", "email", "profileImage"],
-  });
+  // Admin has "name" column, Student/Teacher have firstName/lastName
+  const attributes = role === "admin" 
+    ? ["id", "name", "email", "profileImage"]
+    : ["id", "firstName", "lastName", "email", "profileImage"];
+  const record = await Model.findById(id, { attributes });
   if (!record) return null;
   const plain = record.toJSON();
   const name =
     role === "admin"
       ? plain.name || "Admin"
-      : `${plain.firstName || ""} ${plain.lastName || ""}`.trim();
+      : `${plain.firstName || ""} ${plain.lastName || ""}`.trim() || "User";
   return { id: plain.id, role, name, email: plain.email, profileImage: plain.profileImage };
 };
 
