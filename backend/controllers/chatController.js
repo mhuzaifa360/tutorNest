@@ -1,5 +1,5 @@
 import SequelizePkg from "sequelize";
-const { Op, literal } = SequelizePkg;
+const { literal } = SequelizePkg;
 import { Conversation, ChatMessage, Student, Teacher } from "../models/index.js";
 
 const validRoles = ["student", "teacher"];

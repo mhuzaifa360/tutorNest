@@ -1,6 +1,4 @@
 import { Teacher, Review, Job, Course } from "../models/index.js";
-import SequelizePkg from "sequelize";
-const { Op } = SequelizePkg;
 
 // SEARCH & FILTER TEACHERS
 export const searchTeachers = async (req, res) => {
@@ -26,7 +24,7 @@ export const searchTeachers = async (req, res) => {
 
     if (name) {
       whereCondition.firstName = {
-        [Op.like]: `%${name}%`,
+        $like: `%${name}%`,
       };
     }
 
@@ -40,14 +38,14 @@ export const searchTeachers = async (req, res) => {
 
     if (minExperience) {
       whereCondition.experience = {
-        [Op.gte]: minExperience,
+        $gte: minExperience,
       };
     }
 
     if (minFee || maxFee) {
       whereCondition.hourlyFee = {
-        ...(minFee && { [Op.gte]: Number(minFee) }),
-        ...(maxFee && { [Op.lte]: Number(maxFee) }),
+        ...(minFee && { $gte: Number(minFee) }),
+        ...(maxFee && { $lte: Number(maxFee) }),
       };
     }
 
@@ -131,7 +129,7 @@ export const searchJobs = async (req, res) => {
     let where = {};
 
     if (title) {
-      where.title = { [Op.like]: `%${title}%` };
+      where.title = { $like: `%${title}%` };
     }
 
     if (subject) where.subject = subject;
@@ -141,8 +139,8 @@ export const searchJobs = async (req, res) => {
 
     if (minBudget || maxBudget) {
       where.budget = {
-        ...(minBudget && { [Op.gte]: Number(minBudget) }),
-        ...(maxBudget && { [Op.lte]: Number(maxBudget) }),
+        ...(minBudget && { $gte: Number(minBudget) }),
+        ...(maxBudget && { $lte: Number(maxBudget) }),
       };
     }
 
@@ -179,15 +177,15 @@ export const searchCourses = async (req, res) => {
     let where = {};
 
     if (title) {
-      where.title = { [Op.like]: `%${title}%` };
+      where.title = { $like: `%${title}%` };
     }
 
     if (teacherId) where.teacherId = teacherId;
 
     if (minPrice || maxPrice) {
       where.price = {
-        ...(minPrice && { [Op.gte]: Number(minPrice) }),
-        ...(maxPrice && { [Op.lte]: Number(maxPrice) }),
+        ...(minPrice && { $gte: Number(minPrice) }),
+        ...(maxPrice && { $lte: Number(maxPrice) }),
       };
     }
 

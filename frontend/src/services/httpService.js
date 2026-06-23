@@ -48,4 +48,37 @@ const apiRequest = async (url, options = {}) => {
   }
 };
 
-export { apiRequest };
+const apiMultipartRequest = async (url, formData, options = {}) => {
+  try {
+    const config = {
+      url,
+      method: options.method || "POST",
+      data: formData,
+      ...options,
+      headers: {
+        ...options.headers,
+        "Content-Type": undefined,
+      },
+    };
+
+    const response = await httpClient.request(config);
+    return { ok: response.status >= 200 && response.status < 300, ...response.data };
+  } catch (error) {
+    if (error.response) {
+      return {
+        ok: false,
+        success: false,
+        message:
+          error.response.data?.message ||
+          error.response.data?.error ||
+          error.response.statusText ||
+          "Server error",
+        ...error.response.data,
+      };
+    }
+
+    return { ok: false, success: false, message: error.message || "Network error" };
+  }
+};
+
+export { apiRequest, apiMultipartRequest };

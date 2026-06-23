@@ -95,10 +95,12 @@ export const getMyProfile = async (req, res) => {
       });
     }
 
+    const safeProfile = sanitizeProfile(profile, req.user.role);
     return res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
-      user: sanitizeProfile(profile, req.user.role),
+      user: safeProfile,
+      data: { user: safeProfile },
     });
   } catch (error) {
     return res.status(500).json({
@@ -155,11 +157,13 @@ export const updateMyProfile = async (req, res) => {
     );
 
     await profile.update(updates);
+    const safeProfile = sanitizeProfile(profile, role);
 
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      user: sanitizeProfile(profile, role),
+      user: safeProfile,
+      data: { user: safeProfile },
     });
   } catch (error) {
     return res.status(500).json({

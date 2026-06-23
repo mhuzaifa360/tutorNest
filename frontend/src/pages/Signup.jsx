@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import Btn from "../components/common/Btn";
 import Typography from "../components/common/Typography";
 import { useAuth } from "../context/AuthContext";
+import { authApi } from "../services/apiService";
 
 // ==================
 // CONSTANTS
@@ -153,7 +154,6 @@ const Signup = () => {
 
   // File states
   const [profileImageFile, setProfileImageFile] = useState(null);
-  const [profilePreview, setProfilePreview] = useState(null);
 
   const [docFiles, setDocFiles] = useState({
     cnicFront: null,
@@ -162,8 +162,31 @@ const Signup = () => {
     certificate: null,
   });
 
-  const [docPreviews, setDocPreviews] = useState({});
-  const [uploadStatus, setUploadStatus] = useState({ profile: "idle", cnicFront: "idle", cnicBack: "idle", degree: "idle", certificate: "idle" });
+  const profilePreview = useMemo(() => {
+    if (!profileImageFile) return null;
+    return URL.createObjectURL(profileImageFile);
+  }, [profileImageFile]);
+
+  const docPreviews = useMemo(() => {
+    const previews = {};
+    Object.entries(docFiles).forEach(([key, file]) => {
+      if (file) {
+        previews[key] = URL.createObjectURL(file);
+      }
+    });
+    return previews;
+  }, [docFiles]);
+
+  useEffect(() => {
+    return () => {
+      if (profilePreview) {
+        URL.revokeObjectURL(profilePreview);
+      }
+      Object.values(docPreviews).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [profilePreview, docPreviews]);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -171,34 +194,6 @@ const Signup = () => {
   // -----------------
   // File handlers
   // -----------------
-  useEffect(() => {
-    if (!profileImageFile) {
-      setProfilePreview(null);
-      return;
-    }
-
-    const url = URL.createObjectURL(profileImageFile);
-    setProfilePreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [profileImageFile]);
-
-  useEffect(() => {
-    // create previews for doc files
-    const keys = Object.keys(docFiles);
-    keys.forEach((k) => {
-      const f = docFiles[k];
-      if (f) {
-        const u = URL.createObjectURL(f);
-        setDocPreviews((prev) => ({ ...prev, [k]: u }));
-      } else {
-        setDocPreviews((prev) => ({ ...prev, [k]: null }));
-      }
-    });
-    return () => {
-      Object.values(docPreviews).forEach((u) => u && URL.revokeObjectURL(u));
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [docFiles]);
 
   const validateFile = (file, allowed = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]) => {
     if (!file) return "File missing";
@@ -221,7 +216,6 @@ const Signup = () => {
 
   const removeProfileImage = () => {
     setProfileImageFile(null);
-    setProfilePreview(null);
   };
 
   const handleDocChange = (e) => {
@@ -234,14 +228,11 @@ const Signup = () => {
       return;
     }
     setDocFiles((prev) => ({ ...prev, [name]: f }));
-    setUploadStatus((s) => ({ ...s, [name]: "ready" }));
     setError("");
   };
 
   const removeDocFile = (key) => {
     setDocFiles((prev) => ({ ...prev, [key]: null }));
-    setDocPreviews((p) => ({ ...p, [key]: null }));
-    setUploadStatus((s) => ({ ...s, [key]: "idle" }));
   };
 
   // Input change handler
@@ -301,10 +292,6 @@ const Signup = () => {
       return;
     }
 
-    const endpoint = role === "student" ? 
-      "http://localhost:5000/v1/auth/student/signup" :
-      "http://localhost:5000/v1/auth/teacher/signup";
-
     try {
       setLoading(true);
 
@@ -342,34 +329,25 @@ const Signup = () => {
         });
       }
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        body: fd,
-      });
+      const res =
+        role === "student"
+          ? await authApi.signupStudent(fd)
+          : await authApi.signupTeacher(fd);
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        setError("Server returned an invalid response");
+      if (!res.ok || !res.success) {
+        setError(res.message || "Signup failed");
         return;
       }
 
-      if (!res.ok || !data.success) {
-        setError(data.message || "Signup failed");
-        return;
-      }
-
-      if (!data.token || !data.user) {
+      if (!res.token || !res.user) {
         setError("Invalid response from server");
         return;
       }
 
-      // Save auth
-      login(data.user, data.token);
+      login(res.user, res.token);
 
       // Redirect
-      if (data.user.role === "teacher") {
+      if (res.user.role === "teacher") {
         navigate("/teacher");
       } else {
         navigate("/student");

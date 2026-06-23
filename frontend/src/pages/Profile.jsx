@@ -81,9 +81,10 @@ function Profile() {
   const load = async () => {
     setLoading(true);
     const res = await profileApi.me();
-    if (res.ok && res.user) {
-      setUser(res.user);
-      updateUser(res.user);
+    const profileUser = res.user || res.data?.user || res.data || null;
+    if (res.ok && profileUser) {
+      setUser(profileUser);
+      updateUser(profileUser);
       setError("");
     } else {
       setError(res.message || "Unable to load profile.");
@@ -130,9 +131,16 @@ function Profile() {
     };
 
     const res = await profileApi.update(payload);
-    if (res.ok) {
-      setUser(res.user || { ...user, ...payload });
-      updateUser(res.user || { ...user, ...payload });
+    const profileUser = res.user || res.data?.user || res.data || null;
+    if (res.ok && profileUser) {
+      setUser(profileUser);
+      updateUser(profileUser);
+      setEditing(false);
+      setToast(res.message || "Profile updated successfully");
+    } else if (res.ok) {
+      const optimisticUser = { ...user, ...payload };
+      setUser(optimisticUser);
+      updateUser(optimisticUser);
       setEditing(false);
       setToast(res.message || "Profile updated successfully");
     } else {

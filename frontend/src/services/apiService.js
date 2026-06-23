@@ -1,4 +1,4 @@
-import { apiRequest } from "./httpService";
+import { apiRequest, apiMultipartRequest } from "./httpService";
 
 const buildQuery = (params = {}) =>
   new URLSearchParams(
@@ -10,6 +10,28 @@ const buildQuery = (params = {}) =>
 const apiRequestWithParams = (url, params = {}, options = {}) => {
   const query = buildQuery(params);
   return apiRequest(`${url}${query ? `?${query}` : ""}`, options);
+};
+
+// ==================
+// AUTH API
+// ==================
+
+export const authApi = {
+  login: (role, body) => {
+    if (role === "admin") {
+      return apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ ...body, role }),
+      });
+    }
+
+    return apiRequest(`/auth/${role}/login`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+  signupStudent: (formData) => apiMultipartRequest("/auth/student/signup", formData),
+  signupTeacher: (formData) => apiMultipartRequest("/auth/teacher/signup", formData),
 };
 
 // ==================

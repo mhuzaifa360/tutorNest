@@ -1,5 +1,3 @@
-import SequelizePkg from "sequelize";
-const { Op } = SequelizePkg;
 import Admin from "../models/adminModel.js";
 import {
   Application,
@@ -51,7 +49,7 @@ export const getStudentDashboard = async (req, res) => {
       await Promise.all([
         Enrollment.count({ where: { studentId } }),
         SavedTeacher.count({ where: { studentId } }),
-        Job.count({ where: { studentId, status: { [Op.ne]: "closed" } } }),
+        Job.count({ where: { studentId, status: { $ne: "closed" } } }),
         Message.count({
           where: { receiverId: studentId, receiverRole: "student", isRead: false },
         }),

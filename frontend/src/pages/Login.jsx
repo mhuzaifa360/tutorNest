@@ -5,6 +5,7 @@ import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import Btn from "../components/common/Btn";
 import Typography from "../components/common/Typography";
 import { useAuth } from "../context/AuthContext";
+import { authApi } from "../services/apiService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,48 +37,25 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const endpoint =
-        role === "student"
-          ? "http://localhost:5000/v1/auth/student/login"
-          : role === "teacher"
-            ? "http://localhost:5000/v1/auth/teacher/login"
-            : "http://localhost:5000/v1/auth/login";
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-          role,
-        }),
+      const res = await authApi.login(role, {
+        email: form.email,
+        password: form.password,
       });
 
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        setError("Server returned an invalid response");
+      if (!res.ok || !res.success) {
+        setError(res.message || "Login Failed");
         return;
       }
 
-      if (!response.ok || !data.success) {
-        setError(data.message || "Login Failed");
-        return;
-      }
-
-      if (!data.token || !data.user) {
+      if (!res.token || !res.user) {
         setError("Invalid response from server");
         return;
       }
 
-      // Save Auth Data
-      login(data.user, data.token);
+      login(res.user, res.token);
 
       // Redirect by Role
-      const userRole = data.user.role?.toLowerCase();
+      const userRole = res.user.role?.toLowerCase();
       switch (userRole) {
         case "student":
           navigate("/student");

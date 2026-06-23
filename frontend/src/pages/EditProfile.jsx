@@ -140,6 +140,7 @@ function EditProfile() {
       updateUser(optimisticUser);
 
       const response = await profileApi.update(payload);
+    const profileUser = response.user || response.data?.user || response.data || null;
 
       if (!response.ok || !response.success) {
         updateUser(previousUser);
@@ -147,7 +148,7 @@ function EditProfile() {
         return;
       }
 
-      updateUser(response.user || optimisticUser);
+      updateUser(profileUser || optimisticUser);
       setMessage("Profile updated successfully.");
     } finally {
       setSaving(false);

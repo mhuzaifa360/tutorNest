@@ -3,8 +3,12 @@ import { Navigate, Outlet } from "react-router-dom";
 import { getToken } from "../services/authService";
 
 const ProtectedRoute = ({ requiredRole }) => {
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const token = getToken();
+
+  if (!authReady) {
+    return null;
+  }
 
   if (!token || !user) {
     return <Navigate to="/login" replace />;

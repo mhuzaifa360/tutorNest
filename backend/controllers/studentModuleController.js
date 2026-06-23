@@ -1,5 +1,3 @@
-import SequelizePkg from "sequelize";
-const { Op } = SequelizePkg;
 import {
   Application,
   Course,
@@ -40,7 +38,7 @@ export const getStudentOverview = async (req, res) => {
       await Promise.all([
         Enrollment.count({ where: { studentId } }),
         SavedTeacher.count({ where: { studentId } }),
-        Job.count({ where: { studentId, status: { [Op.ne]: "closed" } } }),
+        Job.count({ where: { studentId, status: { $ne: "closed" } } }),
         Message.count({
           where: { receiverId: studentId, receiverRole: "student", isRead: false },
         }),
@@ -109,20 +107,20 @@ export const browseTeachers = async (req, res) => {
     const minRating = parseNumber(req.query.minRating);
     const where = {};
 
-    if (city) where.city = { [Op.like]: `%${city}%` };
+    if (city) where.city = { $like: `%${city}%` };
     if (province) where.province = province;
     if (teachingMode) where.teachingMode = teachingMode;
-    if (minExperience !== null) where.experience = { [Op.gte]: minExperience };
+    if (minExperience !== null) where.experience = { $gte: minExperience };
     if (minFee !== null || maxFee !== null) {
       where.hourlyFee = {};
-      if (minFee !== null) where.hourlyFee[Op.gte] = minFee;
-      if (maxFee !== null) where.hourlyFee[Op.lte] = maxFee;
+      if (minFee !== null) where.hourlyFee.$gte = minFee;
+      if (maxFee !== null) where.hourlyFee.$lte = maxFee;
     }
     if (search) {
-      where[Op.or] = [
-        { firstName: { [Op.like]: `%${search}%` } },
-        { lastName: { [Op.like]: `%${search}%` } },
-        { qualification: { [Op.like]: `%${search}%` } },
+      where.$or = [
+        { firstName: { $like: `%${search}%` } },
+        { lastName: { $like: `%${search}%` } },
+        { qualification: { $like: `%${search}%` } },
       ];
     }
 
@@ -275,7 +273,7 @@ export const getConversations = async (req, res) => {
   try {
     const messages = await Message.findAll({
       where: {
-        [Op.or]: [
+        $or: [
           { senderId: req.user.id, senderRole: req.user.role },
           { receiverId: req.user.id, receiverRole: req.user.role },
         ],
@@ -304,7 +302,7 @@ export const getMessages = async (req, res) => {
     const { role, id } = req.params;
     const messages = await Message.findAll({
       where: {
-        [Op.or]: [
+        $or: [
           { senderId: req.user.id, senderRole: req.user.role, receiverId: id, receiverRole: role },
           { senderId: id, senderRole: role, receiverId: req.user.id, receiverRole: req.user.role },
         ],

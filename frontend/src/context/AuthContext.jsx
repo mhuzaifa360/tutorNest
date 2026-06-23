@@ -56,6 +56,7 @@ const getInitialUser = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUserState] = useState(getInitialUser);
+  const [authReady, setAuthReady] = useState(false);
 
   const updateUser = useCallback((userData) => {
     if (!userData) return;
@@ -69,13 +70,21 @@ export const AuthProvider = ({ children }) => {
 
   const refreshProfile = useCallback(async () => {
     const token = getToken();
-    if (!token) return null;
+    if (!token) {
+      setAuthReady(true);
+      return null;
+    }
 
     const response = await profileApi.me();
-    if (response.ok && response.user) {
-      updateUser(response.user);
-      return response.user;
+    const profileUser = response.user || response.data?.user || response.data || null;
+    if (response.ok && profileUser) {
+      updateUser(profileUser);
+      setAuthReady(true);
+      return profileUser;
     }
+
+    clearAuth();
+    setAuthReady(true);
     return null;
   }, [updateUser]);
 
@@ -111,7 +120,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, refreshProfile }}>
+    <AuthContext.Provider value={{ user, authReady, login, logout, updateUser, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

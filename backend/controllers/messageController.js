@@ -1,5 +1,3 @@
-import SequelizePkg from "sequelize";
-const { Op } = SequelizePkg;
 import Admin from "../models/adminModel.js";
 import { Message, Student, Teacher } from "../models/index.js";
 
@@ -66,7 +64,7 @@ export const getConversations = async (req, res) => {
 
     const messages = await Message.findAll({
       where: {
-        [Op.or]: [
+        $or: [
           { senderId: userId, senderRole: req.user.role },
           { receiverId: userId, receiverRole: req.user.role },
         ],
@@ -135,7 +133,7 @@ export const getConversationMessages = async (req, res) => {
     const { role, id } = parsed;
     const messages = await Message.findAll({
       where: {
-        [Op.or]: [
+        $or: [
           {
             senderId: req.user.id,
             senderRole: req.user.role,
