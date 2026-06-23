@@ -1,4 +1,5 @@
-import { Sequelize } from "sequelize";
+import SequelizePkg from "sequelize";
+const { Sequelize } = SequelizePkg;
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,7 +13,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || "mysql",
-    logging: false,
+    logging: console.log,
   }
 );
 
@@ -24,7 +25,7 @@ const connectDB = async () => {
     // sync() only creates missing tables — does NOT alter existing ones.
     // Use force:true ONE TIME only to drop & recreate all tables (resets data!).
     // Never use alter:true in production — it stacks duplicate indexes on every restart.
-    await sequelize.sync();
+    await sequelize.sync({ logging: console.log });
 
     console.log("✅ Database synced successfully");
 

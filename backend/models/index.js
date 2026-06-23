@@ -13,6 +13,8 @@ import { EmailToken } from "./emailTokenModel.js";
 import { FileRecord } from "./fileModel.js";
 import { VerificationRequest } from "./verificationRequestModel.js";
 import { Transaction } from "./transactionModel.js";
+import { Conversation } from "./Conversation.js";
+import { ChatMessage } from "./Message.js";
 
 // TEACHER <-> COURSE
 Teacher.hasMany(Course, {
@@ -189,6 +191,37 @@ FileRecord.belongsTo(Teacher, {
   constraints: false,
 });
 
+// CHAT: Conversations & Messages
+Student.hasMany(Conversation, {
+  foreignKey: "studentId",
+  as: "conversations",
+});
+
+Teacher.hasMany(Conversation, {
+  foreignKey: "teacherId",
+  as: "conversations",
+});
+
+Conversation.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+Conversation.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
+Conversation.hasMany(ChatMessage, {
+  foreignKey: "conversationId",
+  as: "messages",
+});
+
+ChatMessage.belongsTo(Conversation, {
+  foreignKey: "conversationId",
+  as: "conversation",
+});
+
 // EXPORT ALL MODELS
 export {
   Teacher,
@@ -202,6 +235,8 @@ export {
   SavedTeacher,
   Notification,
   Message,
+  Conversation,
+  ChatMessage,
   EmailToken,
   FileRecord,
   VerificationRequest,

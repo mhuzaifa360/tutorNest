@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -22,6 +23,8 @@ import profileRoutes from "./routes/profileRoutes.js";
 import studentModuleRoutes from "./routes/studentModuleRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import { setupSocket } from "./socket/socket.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
@@ -71,6 +74,7 @@ app.use(`${API_PREFIX}/profile`, profileRoutes); // profile routes
 app.use(`${API_PREFIX}/student`, studentModuleRoutes); // student module routes
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes); // unified dashboard routes
 app.use(`${API_PREFIX}/messages`, messageRoutes); // unified messaging routes
+app.use(`${API_PREFIX}/chat`, chatRoutes); // chat routes
 app.use(`${API_PREFIX}/email`, emailRoutes); // email service routes
 app.use(`${API_PREFIX}/upload`, uploadRoutes); // upload routes
 app.use(`${API_PREFIX}/verification`, verificationRoutes); // verification workflow routes
@@ -92,10 +96,20 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
       console.log(`📡 API Base URL: http://localhost:${PORT}${API_PREFIX}`);
     });
+
+    // Initialize Socket.io
+    try {
+      setupSocket(server);
+      console.log("📡 Socket.io initialized");
+    } catch (err) {
+      console.warn("Socket.io failed to initialize:", err.message);
+    }
   } catch (error) {
     console.error("❌ Server error:", error.message);  
     process.exit(1);

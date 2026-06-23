@@ -1,4 +1,5 @@
-import { Op } from "sequelize";
+import SequelizePkg from "sequelize";
+const { Op } = SequelizePkg;
 import Admin from "../models/adminModel.js";
 import {
   Application,

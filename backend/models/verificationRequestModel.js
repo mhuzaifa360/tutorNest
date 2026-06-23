@@ -1,4 +1,5 @@
-import { DataTypes } from "sequelize";
+import SequelizePkg from "sequelize";
+const { DataTypes } = SequelizePkg;
 import { sequelize } from "../config/database.js";
 
 export const VerificationRequest = sequelize.define("VerificationRequest", {
@@ -13,8 +14,7 @@ export const VerificationRequest = sequelize.define("VerificationRequest", {
   },
   documentUrls: {
     type: DataTypes.JSON,
-    allowNull: false,
-    defaultValue: [],
+    allowNull: true,
   },
   status: {
     type: DataTypes.ENUM("pending", "approved", "rejected"),

@@ -1,5 +1,6 @@
 import { Teacher, Review, Job, Course } from "../models/index.js";
-import { Op } from "sequelize";
+import SequelizePkg from "sequelize";
+const { Op } = SequelizePkg;
 
 // SEARCH & FILTER TEACHERS
 export const searchTeachers = async (req, res) => {
