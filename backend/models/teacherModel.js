@@ -32,7 +32,7 @@ const Teacher = sequelize.define(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: "teacher_email_unique",
 
       validate: {
         isEmail: true,
@@ -120,7 +120,7 @@ const Teacher = sequelize.define(
     cnic: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: "teacher_cnic_unique",
 
       validate: {
         len: [13, 13],

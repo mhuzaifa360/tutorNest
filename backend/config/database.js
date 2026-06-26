@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const shouldSyncDatabase = String(process.env.DB_SYNC || "").toLowerCase() === "true";
+const shouldLogSql = String(process.env.DB_LOGGING || "").toLowerCase() === "true";
+
 // Sequelize Instance
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -13,25 +16,44 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,
     dialect: process.env.DB_DIALECT || "mysql",
-    logging: console.log,
+    logging: shouldLogSql ? console.log : false,
+    pool: {
+      max: Number(process.env.DB_POOL_MAX) || 5,
+      min: Number(process.env.DB_POOL_MIN) || 0,
+      acquire: Number(process.env.DB_POOL_ACQUIRE) || 30000,
+      idle: Number(process.env.DB_POOL_IDLE) || 10000,
+    },
+    retry: {
+      max: Number(process.env.DB_RETRY_MAX) || 2,
+      match: [/ECONNRESET/, /ETIMEDOUT/, /PROTOCOL_CONNECTION_LOST/],
+    },
   }
 );
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Database connected successfully");
+    console.log("Database connected successfully");
 
-    // sync() only creates missing tables — does NOT alter existing ones.
-    // Use force:true ONE TIME only to drop & recreate all tables (resets data!).
-    // Never use alter:true in production — it stacks duplicate indexes on every restart.
-    await sequelize.sync({ logging: console.log });
-
-    console.log("✅ Database synced successfully");
+    if (shouldSyncDatabase) {
+      // Opt-in only. sync() runs index inspection queries such as SHOW INDEX,
+      // which can reset hosted/unstable MySQL connections during app boot.
+      await sequelize.sync({ logging: shouldLogSql ? console.log : false });
+      console.log("Database synced successfully");
+    } else {
+      console.log("Database sync skipped. Set DB_SYNC=true only for local schema setup.");
+    }
 
     return true;
   } catch (error) {
-    console.error("❌ Database connection failed:", error.message);
+    const reason =
+      error.message ||
+      error.parent?.message ||
+      error.parent?.code ||
+      error.original?.message ||
+      error.name ||
+      "Unknown database error";
+    console.error("Database connection failed:", reason);
     return false;
   }
 };
