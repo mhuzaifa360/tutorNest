@@ -119,6 +119,47 @@ export const markAllAsRead = async (req, res) => {
   }
 };
 
+export const markRead = async (req, res) => {
+  try {
+    const { id, ids, all } = req.body || {};
+
+    if (all || (!id && !ids)) {
+      await Notification.update(
+        { isRead: true },
+        { where: { userId: req.user.id, isRead: false } }
+      );
+      return res.status(200).json({
+        success: true,
+        message: "Notifications marked as read",
+        data: { all: true },
+      });
+    }
+
+    const targetIds = Array.isArray(ids) ? ids : [id];
+    await Notification.update(
+      { isRead: true },
+      {
+        where: {
+          id: { $in: targetIds.map(Number).filter(Boolean) },
+          userId: req.user.id,
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Notifications marked as read",
+      data: { ids: targetIds },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error marking notifications as read",
+      errors: [error.message],
+    });
+  }
+};
+
 export const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);

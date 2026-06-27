@@ -2,6 +2,7 @@ import Admin from "../models/adminModel.js";
 import { Teacher, Student, Job } from "../models/index.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { createNotification } from "./notificationController.js";
 
 const generateToken = (id) => {
   return jwt.sign({ id, role: "admin" }, process.env.JWT_SECRET, {
@@ -233,7 +234,14 @@ export const approveTeacher = async (req, res) => {
       });
     }
 
-    await teacher.update({ status: "approved" });
+    await teacher.update({ status: "approved", rejectionReason: null });
+
+    await createNotification({
+      userId: teacher.id,
+      title: "Teacher Profile Approved",
+      message: "Your teacher profile has been approved. You can now apply for jobs and chat with students.",
+      type: "system",
+    });
 
     return res.status(200).json({
       success: true,
@@ -259,7 +267,23 @@ export const rejectTeacher = async (req, res) => {
       });
     }
 
-    await teacher.update({ status: "rejected" });
+    const rejectionReason = String(req.body?.rejectionReason || req.body?.reason || "").trim();
+    if (!rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: "Rejection reason is required",
+        errors: ["Rejection reason is required"],
+      });
+    }
+
+    await teacher.update({ status: "rejected", rejectionReason });
+
+    await createNotification({
+      userId: teacher.id,
+      title: "Teacher Profile Rejected",
+      message: `Your teacher profile was rejected. Reason: ${rejectionReason}`,
+      type: "system",
+    });
 
     return res.status(200).json({
       success: true,

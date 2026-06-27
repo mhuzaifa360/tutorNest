@@ -1,6 +1,7 @@
 import SequelizePkg from "sequelize";
 const { Sequelize } = SequelizePkg;
 import dotenv from "dotenv";
+import { ensureRuntimeSchema } from "./schemaGuard.js";
 
 dotenv.config();
 
@@ -43,6 +44,9 @@ const connectDB = async () => {
     } else {
       console.log("Database sync skipped. Set DB_SYNC=true only for local schema setup.");
     }
+
+    await ensureRuntimeSchema(sequelize);
+    console.log("Runtime schema verified");
 
     return true;
   } catch (error) {

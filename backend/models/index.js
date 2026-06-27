@@ -53,6 +53,16 @@ Job.belongsTo(Student, {
   as: "student",
 });
 
+Teacher.hasMany(Job, {
+  foreignKey: "assignedTeacherId",
+  as: "assignedJobs",
+});
+
+Job.belongsTo(Teacher, {
+  foreignKey: "assignedTeacherId",
+  as: "assignedTeacher",
+});
+
 // JOB <-> APPLICATION
 Job.hasMany(Application, {
   foreignKey: "jobId",
@@ -73,6 +83,16 @@ Teacher.hasMany(Application, {
 Application.belongsTo(Teacher, {
   foreignKey: "tutorId",
   as: "tutor",
+});
+
+Student.hasMany(Application, {
+  foreignKey: "studentId",
+  as: "jobApplications",
+});
+
+Application.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
 });
 
 // STUDENT <-> REVIEW

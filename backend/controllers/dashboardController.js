@@ -1,6 +1,8 @@
 import Admin from "../models/adminModel.js";
 import {
   Application,
+  ChatMessage,
+  Conversation,
   Course,
   Enrollment,
   Job,
@@ -45,18 +47,60 @@ export const getStudentDashboard = async (req, res) => {
     if (!assertSelfOrAdmin(req, res, req.params.id)) return;
 
     const studentId = Number(req.params.id);
-    const [enrolledCourses, savedTeachers, activeJobs, unreadMessages, unreadNotifications] =
+    const [
+      enrolledCourses,
+      savedTeachers,
+      activeJobs,
+      pendingApplications,
+      acceptedTutors,
+      unreadMessages,
+      unreadChatMessages,
+      unreadNotifications,
+    ] =
       await Promise.all([
         Enrollment.count({ where: { studentId } }),
         SavedTeacher.count({ where: { studentId } }),
         Job.count({ where: { studentId, status: { $ne: "closed" } } }),
+        Application.count({
+          where: { status: "pending" },
+          include: [
+            {
+              model: Job,
+              as: "job",
+              where: { studentId },
+              required: true,
+            },
+          ],
+        }),
+        Application.count({
+          where: { status: "accepted" },
+          include: [
+            {
+              model: Job,
+              as: "job",
+              where: { studentId },
+              required: true,
+            },
+          ],
+        }),
         Message.count({
           where: { receiverId: studentId, receiverRole: "student", isRead: false },
+        }),
+        ChatMessage.count({
+          where: { senderRole: "teacher", isRead: false },
+          include: [
+            {
+              model: Conversation,
+              as: "conversation",
+              where: { studentId },
+              required: true,
+            },
+          ],
         }),
         Notification.count({ where: { userId: studentId, isRead: false } }),
       ]);
 
-    const [latestCourses, teachers, recentActivity, recentApplications] =
+    const [latestCourses, teachers, recentActivity, recentApplications, recentJobs] =
       await Promise.all([
         Course.findAll({
           limit: 4,
@@ -91,6 +135,11 @@ export const getStudentDashboard = async (req, res) => {
             },
           ],
         }),
+        Job.findAll({
+          where: { studentId },
+          limit: 5,
+          order: [["createdAt", "DESC"]],
+        }),
       ]);
 
     const recommendedTeachers = await Promise.all(teachers.map(withTeacherRating));
@@ -104,8 +153,10 @@ export const getStudentDashboard = async (req, res) => {
           savedTeachers,
           jobs: activeJobs,
           activeJobs,
-          messages: unreadMessages,
-          unreadMessages,
+          pendingApplications,
+          acceptedTutors,
+          messages: unreadMessages + unreadChatMessages,
+          unreadMessages: unreadMessages + unreadChatMessages,
           notifications: unreadNotifications,
         },
         recentActivity,
@@ -113,14 +164,18 @@ export const getStudentDashboard = async (req, res) => {
           enrolledCourses,
           savedTeachers,
           activeJobs,
+          pendingApplications,
+          acceptedTutors,
         },
         recommendedTeachers,
         latestCourses,
         latestRecords: {
           courses: latestCourses,
           applications: recentApplications,
+          jobs: recentJobs,
         },
         recentApplications,
+        recentJobs,
       },
     });
   } catch (error) {
@@ -146,15 +201,29 @@ export const getTeacherDashboard = async (req, res) => {
       courses,
       applications,
       acceptedStudents,
+      availableJobs,
       unreadMessages,
+      unreadChatMessages,
       unreadNotifications,
       reviews,
     ] = await Promise.all([
       Course.count({ where: { teacherId } }),
       Application.count({ where: { tutorId: teacherId } }),
       Application.count({ where: { tutorId: teacherId, status: "accepted" } }),
+      Job.count({ where: { status: "open" } }),
       Message.count({
         where: { receiverId: teacherId, receiverRole: "teacher", isRead: false },
+      }),
+      ChatMessage.count({
+        where: { senderRole: "student", isRead: false },
+        include: [
+          {
+            model: Conversation,
+            as: "conversation",
+            where: { teacherId },
+            required: true,
+          },
+        ],
       }),
       Notification.count({ where: { userId: teacherId, isRead: false } }),
       Review.findAll({
@@ -182,7 +251,7 @@ export const getTeacherDashboard = async (req, res) => {
 
     const estimatedEarnings = acceptedStudents * (teacher.hourlyFee || 0);
 
-    const [recentApplications, recentActivity] = await Promise.all([
+    const [recentApplications, recentActivity, recentOpenJobs] = await Promise.all([
       Application.findAll({
         where: { tutorId: teacherId },
         limit: 5,
@@ -205,6 +274,16 @@ export const getTeacherDashboard = async (req, res) => {
         limit: 5,
         order: [["createdAt", "DESC"]],
       }),
+      Job.findAll({
+        where: { status: "open" },
+        limit: 5,
+        order: [["createdAt", "DESC"]],
+        include: {
+          model: Student,
+          as: "student",
+          attributes: ["id", "firstName", "lastName", "city", "province"],
+        },
+      }),
     ]);
 
     return res.status(200).json({
@@ -212,10 +291,12 @@ export const getTeacherDashboard = async (req, res) => {
       data: {
         stats: {
           courses,
+          availableJobs,
           jobs: applications,
           applications,
-          messages: unreadMessages,
-          unreadMessages,
+          acceptedJobs: acceptedStudents,
+          messages: unreadMessages + unreadChatMessages,
+          unreadMessages: unreadMessages + unreadChatMessages,
           notifications: unreadNotifications,
           students: acceptedStudents,
           earnings: estimatedEarnings,
@@ -230,8 +311,10 @@ export const getTeacherDashboard = async (req, res) => {
         latestRecords: {
           applications: recentApplications,
           reviews,
+          jobs: recentOpenJobs,
         },
         recentApplications,
+        recentOpenJobs,
         recentReviews: reviews,
       },
     });

@@ -1,26 +1,25 @@
 import express from "express";
-import { createJob, getJobs,  getSingleJob, updateJob, deleteJob} from "../controllers/jobControllers.js";
-import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
+import { createJob, deleteJob, getJobs, getSingleJob, updateJob } from "../controllers/jobControllers.js";
+import { authorizeRoles, verifyToken } from "../middleware/authMiddleware.js";
 import { rankedJobs } from "../utils/rankJob.js";
 
 const router = express.Router();
 
-// CREATE JOB | Role: student
-router.post("/createJob",verifyToken,authorizeRoles("student"),createJob);
-
-// GET ALL JOBS | Role: Authenticated Users (Teacher usually, but not explicitly restricted here)
-router.get("/getJobs", verifyToken, getJobs); 
-
-// GET SINGLE JOB | Role: Authenticated Users
-router.get("/getSingleJob/:id", verifyToken, getSingleJob); 
-
-// UPDATE JOB | Role: student
-router.put("/updateJob/:id",verifyToken,authorizeRoles("student"),  updateJob);
-
-// DELETE JOB | Role: student
-router.delete("/deleteJob/:id",  verifyToken,authorizeRoles("student"),deleteJob);
-
-// RANKED JOBS | Role: Any (Public)
+// Ranked jobs must stay before /:id.
 router.get("/ranked", rankedJobs);
+
+// Backward-compatible legacy endpoints.
+router.post("/createJob", verifyToken, authorizeRoles("student"), createJob);
+router.get("/getJobs", verifyToken, getJobs);
+router.get("/getSingleJob/:id", verifyToken, getSingleJob);
+router.put("/updateJob/:id", verifyToken, authorizeRoles("student"), updateJob);
+router.delete("/deleteJob/:id", verifyToken, authorizeRoles("student"), deleteJob);
+
+// Production REST endpoints.
+router.get("/", verifyToken, getJobs);
+router.post("/", verifyToken, authorizeRoles("student"), createJob);
+router.get("/:id", verifyToken, getSingleJob);
+router.put("/:id", verifyToken, authorizeRoles("student", "admin"), updateJob);
+router.delete("/:id", verifyToken, authorizeRoles("student", "admin"), deleteJob);
 
 export default router;

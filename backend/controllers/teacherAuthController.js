@@ -3,6 +3,53 @@ import jwt from "jsonwebtoken";
 import { Teacher } from "../models/index.js";
 import { FileRecord } from "../models/index.js";
 
+const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
+
+const parseList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.map((item) => String(item).trim()).filter(Boolean)
+      : [String(parsed).trim()].filter(Boolean);
+  } catch {
+    return String(value)
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+};
+
+const firstFile = (files, ...keys) => {
+  for (const key of keys) {
+    if (files?.[key]?.[0]) return files[key][0];
+  }
+  return null;
+};
+
+const uploadPath = (file, folder) =>
+  file ? `/uploads/${folder}/${file.filename}` : null;
+
+const handleSignupError = (res, error, fallback) => {
+  if (error.name === "SequelizeUniqueConstraintError") {
+    const field = error.errors?.[0]?.path || "";
+    const message = field === "cnic" ? "CNIC already exists" : "Email already exists";
+    return res.status(409).json({ success: false, message, errors: [message] });
+  }
+
+  if (error.name === "SequelizeValidationError") {
+    const errors = error.errors?.map((item) => item.message) || [error.message];
+    return res.status(400).json({ success: false, message: errors[0], errors });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: fallback,
+    errors: [error.message],
+  });
+};
+
 // =========================
 // TEACHER SIGNUP
 // =========================
@@ -26,71 +73,103 @@ export const signupTeacher = async (req, res) => {
       cnic,
     } = req.body;
 
-    // Validate required fields
-    if (!firstName || !lastName || !email || !password || !mobile || !province || !city || !gender || !subjects || experience === undefined || !qualification || !teachingMode || hourlyFee === undefined || !cnic) {
+    const files = req.files || {};
+    const profileImageFile = firstFile(files, "profileImage");
+    const cnicFrontFile = firstFile(files, "cnicFront");
+    const cnicBackFile = firstFile(files, "cnicBack");
+    const degreeFile = firstFile(files, "degreeCertificate", "degree");
+    const experienceFile = firstFile(files, "experienceCertificate", "certificate");
+    const parsedSubjects = parseList(subjects);
+    const cleanCnic = String(cnic || "").replace(/-/g, "").trim();
+    const parsedExperience = Number(experience);
+    const parsedHourlyFee = Number(hourlyFee);
+
+    const errors = [];
+    if (!firstName?.trim()) errors.push("First name is required");
+    if (!lastName?.trim()) errors.push("Last name is required");
+    if (!email?.trim()) errors.push("Email is required");
+    if (!password || password.length < 6) errors.push("Password must be at least 6 characters");
+    if (!mobile?.trim()) errors.push("Mobile number is required");
+    if (!gender) errors.push("Gender is required");
+    if (!province?.trim()) errors.push("Province is required");
+    if (!city?.trim()) errors.push("City is required");
+    if (!qualification?.trim()) errors.push("Missing qualification");
+    if (!Number.isFinite(parsedExperience) || parsedExperience < 0) errors.push("Invalid experience");
+    if (!["online", "home", "both"].includes(teachingMode)) errors.push("Invalid teaching mode");
+    if (!Number.isFinite(parsedHourlyFee) || parsedHourlyFee <= 0) errors.push("Invalid hourly fee");
+    if (!/^\d{13}$/.test(cleanCnic)) errors.push("Invalid CNIC");
+    if (!parsedSubjects.length) errors.push("Invalid subjects");
+    if (!profileImageFile) errors.push("Profile image required");
+    if (!cnicFrontFile) errors.push("CNIC front is required");
+    if (!cnicBackFile) errors.push("CNIC back is required");
+    if (!degreeFile) errors.push("Degree certificate is required");
+    if (!experienceFile) errors.push("Experience certificate is required");
+
+    if (errors.length) {
       return res.status(400).json({
         success: false,
-        message: "All required fields must be provided",
+        message: errors[0],
+        errors,
       });
     }
 
-    const profileImage = req.file ? req.file.filename : null;
+    const profileImage = uploadPath(profileImageFile, "profile");
+    const cnicFront = uploadPath(cnicFrontFile, "documents");
+    const cnicBack = uploadPath(cnicBackFile, "documents");
+    const degreeCertificate = uploadPath(degreeFile, "documents");
+    const experienceCertificate = uploadPath(experienceFile, "documents");
+    const normalizedEmail = normalizeEmail(email);
 
     const existingTeacher = await Teacher.findOne({
-      where: { email: email.trim().toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (existingTeacher) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "Teacher already exists with this email",
+        message: "Email already exists",
+        errors: ["Email already exists"],
       });
     }
 
     // Check CNIC uniqueness
     const existingCnic = await Teacher.findOne({
-      where: { cnic: cnic.replace(/-/g, "") },
+      where: { cnic: cleanCnic },
     });
 
     if (existingCnic) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "A teacher already exists with this CNIC",
+        message: "CNIC already exists",
+        errors: ["CNIC already exists"],
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Parse subjects if it's a string
-    let parsedSubjects = subjects;
-    if (typeof subjects === "string") {
-      try {
-        parsedSubjects = JSON.parse(subjects);
-      } catch {
-        parsedSubjects = subjects.split(",").map((s) => s.trim()).filter(Boolean);
-      }
-    }
-
-    // Strip dashes from CNIC for storage (store as 13 digits)
-    const cleanCnic = cnic.replace(/-/g, "");
-
     const newTeacher = await Teacher.create({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
-      mobile,
-      province,
-      city,
+      mobile: mobile.trim(),
+      province: province.trim(),
+      city: city.trim(),
       gender,
       subjects: parsedSubjects,
-      experience: Number(experience) || 0,
-      bio,
+      experience: parsedExperience,
+      bio: bio || null,
       profileImage,
-      qualification,
+      cnicFront,
+      cnicBack,
+      degreeCertificate,
+      experienceCertificate,
+      qualification: qualification.trim(),
       teachingMode,
-      hourlyFee: Number(hourlyFee) || 0,
+      hourlyFee: parsedHourlyFee,
       cnic: cleanCnic,
+      status: "pending",
+      rejectionReason: null,
     });
 
     const token = jwt.sign(
@@ -108,16 +187,20 @@ export const signupTeacher = async (req, res) => {
     try {
       const files = req.files || {};
       const entries = [];
-      ["cnicFront", "cnicBack", "degree", "certificate"].forEach((key) => {
-        const fileArr = files[key];
-        if (fileArr && fileArr.length) {
-          const f = fileArr[0];
+      [
+        { key: "profileImage", file: profileImageFile, type: "profile", url: profileImage },
+        { key: "cnicFront", file: cnicFrontFile, type: "verification", url: cnicFront },
+        { key: "cnicBack", file: cnicBackFile, type: "verification", url: cnicBack },
+        { key: "degreeCertificate", file: degreeFile, type: "verification", url: degreeCertificate },
+        { key: "experienceCertificate", file: experienceFile, type: "verification", url: experienceCertificate },
+      ].forEach(({ file: f, type, url }) => {
+        if (f) {
           entries.push({
             ownerId: newTeacher.id,
             ownerRole: "teacher",
-            type: "document",
+            type,
             entityId: null,
-            url: `/${f.destination.replace(process.cwd(), "").replace(/\\\\/g, "/").replace(/^\//, "")}/${f.filename}`.replace(/\\//g, "/"),
+            url,
             filename: f.filename,
             originalName: f.originalname,
             mimeType: f.mimetype,
@@ -141,6 +224,8 @@ export const signupTeacher = async (req, res) => {
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "teacher",
       profileImage: safeUser.profileImage || null,
+      status: safeUser.status,
+      rejectionReason: safeUser.rejectionReason || null,
     };
 
     return res.status(201).json({
@@ -150,11 +235,7 @@ export const signupTeacher = async (req, res) => {
     });
   } catch (error) {
     console.error("Teacher Signup Error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: error.errors ? error.errors[0].message : "Teacher signup failed",
-      error: error.message,
-    });
+    return handleSignupError(res, error, "Teacher signup failed");
   }
 };
 
@@ -211,6 +292,8 @@ export const loginTeacher = async (req, res) => {
       email: (safeUser.email || "").toString().trim().toLowerCase(),
       role: "teacher",
       profileImage: safeUser.profileImage || null,
+      status: safeUser.status,
+      rejectionReason: safeUser.rejectionReason || null,
     };
 
     return res.status(200).json({

@@ -17,6 +17,7 @@ import DashboardHome from "../pages/dashboard/DashboardHome";
 import { LegacyStudentRedirect, LegacyTeacherRedirect, LegacyDashboardRedirect } from "./LegacyRedirects";
 
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
+import TeacherJobDetails from "../pages/teacher/TeacherJobDetails";
 import FindTutors from "../pages/student/FindTutors";
 import TeacherProfile from "../pages/student/TeacherProfile";
 import SavedTutors from "../pages/student/SavedTutors";
@@ -75,6 +76,7 @@ function AppRoutes() {
         {/* TEACHER DASHBOARD ROUTES */}
         <Route element={<ProtectedRoute requiredRole="teacher" />}>
           <Route path="/teacher" element={<TeacherDashboard />} />
+          <Route path="/teacher/jobs/:id" element={<TeacherJobDetails />} />
           <Route path="/teacher/messages" element={<Messages />} />
           <Route path="/teacher/profile" element={<Profile />} />
           <Route path="/teacher/settings" element={<Settings />} />

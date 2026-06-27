@@ -154,21 +154,21 @@ export const studentApi = {
 
   jobs: () => apiRequest("/student/jobs"),
   createJob: (body) =>
-    apiRequest("/jobs/createJob", {
+    apiRequest("/jobs", {
       method: "POST",
       body: JSON.stringify(body),
     }),
   updateJob: (id, body) =>
-    apiRequest(`/jobs/updateJob/${id}`, {
+    apiRequest(`/jobs/${id}`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
-  deleteJob: (id) => apiRequest(`/jobs/deleteJob/${id}`, { method: "DELETE" }),
+  deleteJob: (id) => apiRequest(`/jobs/${id}`, { method: "DELETE" }),
 
-  applications: () => apiRequest("/student/applications"),
+  applications: () => apiRequest("/applications/student"),
   updateApplication: (id, status) =>
-    apiRequest(`/student/applications/${id}`, {
-      method: "PUT",
+    apiRequest(`/applications/${id}/${status === "accepted" ? "accept" : "reject"}`, {
+      method: "PATCH",
       body: JSON.stringify({ status }),
     }),
 
@@ -260,6 +260,15 @@ export const teacherApi = {
 
   delete: (id) =>
     apiRequest(`/teachers/deleteTeacher/${id}`, { method: "DELETE" }),
+
+  jobs: (params = {}) => apiRequestWithParams("/jobs", params),
+  job: (id) => apiRequest(`/jobs/${id}`),
+  applyJob: (body) =>
+    apiRequest("/applications", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  applications: () => apiRequest("/applications/teacher"),
 };
 
 // ==================
@@ -293,25 +302,25 @@ export const courseApi = {
 
 export const jobApi = {
   create: (body) =>
-    apiRequest("/jobs/createJob", {
+    apiRequest("/jobs", {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
-  getAll: () => apiRequest("/jobs/getJobs"),
+  getAll: (params = {}) => apiRequestWithParams("/jobs", params),
 
-  getOne: (id) => apiRequest(`/jobs/getSingleJob/${id}`),
+  getOne: (id) => apiRequest(`/jobs/${id}`),
 
   getRanked: () => apiRequest("/jobs/ranked"),
 
   update: (id, body) =>
-    apiRequest(`/jobs/updateJob/${id}`, {
+    apiRequest(`/jobs/${id}`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
 
   delete: (id) =>
-    apiRequest(`/jobs/deleteJob/${id}`, { method: "DELETE" }),
+    apiRequest(`/jobs/${id}`, { method: "DELETE" }),
 };
 
 // ==================
@@ -320,18 +329,22 @@ export const jobApi = {
 
 export const applicationApi = {
   apply: (body) =>
-    apiRequest("/applications/apply", {
+    apiRequest("/applications", {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
-  getAll: () => apiRequest("/applications/getApplications"),
+  getAll: () => apiRequest("/applications"),
 
-  getOne: (id) => apiRequest(`/applications/getSingleApplication/${id}`),
+  getOne: (id) => apiRequest(`/applications/${id}`),
+  getStudent: () => apiRequest("/applications/student"),
+  getTeacher: () => apiRequest("/applications/teacher"),
+  accept: (id) => apiRequest(`/applications/${id}/accept`, { method: "PATCH" }),
+  reject: (id) => apiRequest(`/applications/${id}/reject`, { method: "PATCH" }),
 
   updateStatus: (id, status) =>
-    apiRequest(`/applications/updateApplication/${id}`, {
-      method: "PUT",
+    apiRequest(`/applications/${id}/${status === "accepted" ? "accept" : "reject"}`, {
+      method: "PATCH",
       body: JSON.stringify({ status }),
     }),
 

@@ -1,39 +1,53 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
+const documentFields = [
+  "cnicFront",
+  "cnicBack",
+  "degree",
+  "certificate",
+  "degreeCertificate",
+  "experienceCertificate",
+];
+
+const ensureDir = (dir) => {
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+};
 
 // STORAGE CONFIG
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Route by fieldname when available
     const field = file.fieldname;
-    if (field === "profileImage") return cb(null, `${uploadDir}/profile`);
-    if (["cnicFront", "cnicBack", "degree", "certificate"].includes(field)) return cb(null, `${uploadDir}/documents`);
+    if (field === "profileImage") return cb(null, ensureDir(`${uploadDir}/profile`));
+    if (documentFields.includes(field)) return cb(null, ensureDir(`${uploadDir}/documents`));
 
     // Fallbacks
     const category = req.uploadCategory;
     if (category === "profile") {
-      return cb(null, `${uploadDir}/profile`);
+      return cb(null, ensureDir(`${uploadDir}/profile`));
     }
 
     if (category === "document") {
-      return cb(null, `${uploadDir}/documents`);
+      return cb(null, ensureDir(`${uploadDir}/documents`));
     }
 
     if (req.user?.role === "student") {
-      return cb(null, `${uploadDir}/students`);
+      return cb(null, ensureDir(`${uploadDir}/students`));
     }
 
     if (req.user?.role === "teacher") {
-      return cb(null, `${uploadDir}/tutors`);
+      return cb(null, ensureDir(`${uploadDir}/tutors`));
     }
 
     if (req.baseUrl && req.baseUrl.includes("student")) {
-      return cb(null, `${uploadDir}/students`);
+      return cb(null, ensureDir(`${uploadDir}/students`));
     }
 
-    return cb(null, `${uploadDir}/tutors`);
+    return cb(null, ensureDir(`${uploadDir}/tutors`));
   },
 
   filename: (req, file, cb) => {
@@ -49,12 +63,11 @@ const storage = multer.diskStorage({
 
 // FILE FILTER
 const fileFilter = (req, file, cb) => {
-  const docFields = ["cnicFront", "cnicBack", "degree", "certificate"];
   const ext = path.extname(file.originalname).toLowerCase();
   const mime = file.mimetype;
 
   // Allow images for profile and images/pdf for documents
-  if (docFields.includes(file.fieldname)) {
+  if (documentFields.includes(file.fieldname)) {
     if ([".jpg", ".jpeg", ".png", ".pdf"].includes(ext) && (mime.startsWith("image/") || mime === "application/pdf")) {
       return cb(null, true);
     }
@@ -77,5 +90,22 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024,
   },
 });
+
+export const handleUpload = (middleware) => (req, res, next) => {
+  middleware(req, res, (error) => {
+    if (!error) return next();
+
+    const message =
+      error instanceof multer.MulterError
+        ? error.message
+        : error.message || "Invalid file";
+
+    return res.status(400).json({
+      success: false,
+      message,
+      errors: [message],
+    });
+  });
+};
 
 export default upload;

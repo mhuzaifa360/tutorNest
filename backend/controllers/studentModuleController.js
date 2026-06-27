@@ -9,6 +9,10 @@ import {
   SavedTeacher,
   Teacher,
 } from "../models/index.js";
+import {
+  acceptApplication,
+  rejectApplication,
+} from "./applicationController.js";
 
 const parseNumber = (value) => {
   if (value === undefined || value === null || value === "") return null;
@@ -251,22 +255,10 @@ export const getJobApplicationsForStudent = async (req, res) => {
 };
 
 export const updateStudentApplication = async (req, res) => {
-  try {
-    const { status } = req.body;
-    if (!["accepted", "rejected"].includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status" });
-    }
-    const application = await Application.findById(req.params.id, {
-      include: { model: Job, as: "job" },
-    });
-    if (!application || application.job?.studentId !== req.user.id) {
-      return res.status(404).json({ success: false, message: "Application not found" });
-    }
-    await application.update({ status });
-    return res.status(200).json({ success: true, data: application });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
+  const { status } = req.body;
+  if (status === "accepted") return acceptApplication(req, res);
+  if (status === "rejected") return rejectApplication(req, res);
+  return res.status(400).json({ success: false, message: "Invalid status", errors: [] });
 };
 
 export const getConversations = async (req, res) => {

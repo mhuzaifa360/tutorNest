@@ -10,7 +10,7 @@ import {
   loginTeacher,
 } from "../controllers/teacherAuthController.js";
 
-import upload from '../utils/multer.js'
+import upload, { handleUpload } from '../utils/multer.js'
 import { loginAdmin as unifiedAdminLogin } from "../controllers/adminManagementController.js";
 
 const router = express.Router();
@@ -29,7 +29,7 @@ router.post("/login", (req, res, next) => {
 
 // STUDENT AUTH (Public)
 // Role: Any (Public)
-router.post("/student/signup", upload.single("profileImage"), signupStudent);
+router.post("/student/signup", handleUpload(upload.single("profileImage")), signupStudent);
 // Role: Any (Public)
 router.post("/student/login", loginStudent);
 
@@ -39,13 +39,15 @@ router.post("/student/login", loginStudent);
 // Accept multiple fields on teacher signup: profileImage + documents
 router.post(
   "/teacher/signup",
-  upload.fields([
+  handleUpload(upload.fields([
     { name: "profileImage", maxCount: 1 },
     { name: "cnicFront", maxCount: 1 },
     { name: "cnicBack", maxCount: 1 },
     { name: "degree", maxCount: 1 },
     { name: "certificate", maxCount: 1 },
-  ]),
+    { name: "degreeCertificate", maxCount: 1 },
+    { name: "experienceCertificate", maxCount: 1 },
+  ])),
   signupTeacher
 );
 // Role: Any (Public)

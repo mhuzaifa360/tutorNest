@@ -1,6 +1,6 @@
 import SequelizePkg from "sequelize";
 const { literal } = SequelizePkg;
-import { Conversation, ChatMessage, Student, Teacher } from "../models/index.js";
+import { Application, Conversation, ChatMessage, Job, Student, Teacher } from "../models/index.js";
 
 const validRoles = ["student", "teacher"];
 
@@ -25,6 +25,29 @@ const hasConversationAccess = (user, conversation) => {
   return false;
 };
 
+const hasAcceptedApplication = async (studentId, teacherId) => {
+  const accepted = await Application.findOne({
+    where: {
+      tutorId: teacherId,
+      status: "accepted",
+    },
+    include: [
+      {
+        model: Job,
+        as: "job",
+        where: { studentId },
+        required: true,
+      },
+    ],
+  });
+  return Boolean(accepted);
+};
+
+const canUseConversation = async (user, conversation) => {
+  if (!hasConversationAccess(user, conversation)) return false;
+  return hasAcceptedApplication(conversation.studentId, conversation.teacherId);
+};
+
 export const createOrGetConversation = async (req, res) => {
   try {
     const studentId = Number(req.body.studentId);
@@ -44,6 +67,14 @@ export const createOrGetConversation = async (req, res) => {
 
     if (req.user.role === "teacher" && req.user.id !== teacherId) {
       return res.status(403).json({ success: false, message: "Teacher may only create their own conversation" });
+    }
+
+    const canChat = await hasAcceptedApplication(studentId, teacherId);
+    if (!canChat) {
+      return res.status(403).json({
+        success: false,
+        message: "Chat opens only after the student accepts the teacher application",
+      });
     }
 
     const [conversation] = await Conversation.findOrCreate({
@@ -72,7 +103,7 @@ export const createOrGetConversation = async (req, res) => {
 
 export const getConversations = async (req, res) => {
   try {
-    const userId = Number(req.params.userId);
+    const userId = Number(req.params.userId || req.user.id);
     if (!userId || req.user.id !== userId) {
       return res.status(403).json({ success: false, message: "Access denied" });
     }
@@ -130,7 +161,7 @@ export const getMessages = async (req, res) => {
     }
 
     const conversation = await Conversation.findById(conversationId);
-    if (!conversation || !hasConversationAccess(req.user, conversation)) {
+    if (!conversation || !(await canUseConversation(req.user, conversation))) {
       return res.status(404).json({ success: false, message: "Conversation not found or access denied" });
     }
 
@@ -169,7 +200,7 @@ export const sendChatMessage = async (req, res) => {
     }
 
     const conversation = await Conversation.findById(conversationId);
-    if (!conversation || !hasConversationAccess(req.user, conversation)) {
+    if (!conversation || !(await canUseConversation(req.user, conversation))) {
       return res.status(404).json({ success: false, message: "Conversation not found or access denied" });
     }
 

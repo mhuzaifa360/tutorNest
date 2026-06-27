@@ -15,6 +15,8 @@ export const SavedTeacher = sequelize.define(
     },
   },
   {
+    tableName: "savedteachers",
+    timestamps: true,
     indexes: [
       {
         unique: true,

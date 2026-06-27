@@ -117,6 +117,26 @@ const Teacher = sequelize.define(
       allowNull: true,
     },
 
+    cnicFront: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    cnicBack: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    degreeCertificate: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    experienceCertificate: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
     cnic: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -136,10 +156,15 @@ const Teacher = sequelize.define(
 
       defaultValue: "pending",
     },
+
+    rejectionReason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
 
   {
-    tableName: "Teacher",
+    tableName: "teacher",
     timestamps: true,
   }
 );
