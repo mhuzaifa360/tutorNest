@@ -7,7 +7,7 @@ TutorNest is a role-based tutor finder and learning marketplace built with React
 - Student, teacher, and admin authentication with JWT.
 - Admin approval workflow for teachers. Pending and rejected teachers are hidden from public listings, Tutor Finder, search, saved teachers, recommendations, courses, applications, and home-page tutor sections.
 - Admin registration notifications for new teachers and students, with profile image, name, role, registration time, and admin quick actions for teacher approve/reject/view.
-- Private teacher verification documents. Profile images are public; CNIC, degree, certificate, resume, and verification files are available only through authenticated owner/admin download routes.
+- Private teacher verification documents. Profile images are public; teacher CNIC, degree, certificate, resume, and verification files are available only to admins.
 - Tutor Finder, public teacher listings, home featured tutors, saved teachers, and teacher profile pages show approved teachers only.
 - Teacher profile actions for students: Save, Message, and Hire Me.
 - Saved Teachers dashboard with save/remove, profile, and message actions.
@@ -46,6 +46,14 @@ When a logged-in student opens an approved teacher profile from Tutor Finder, se
 - Save: saves the teacher, removes the teacher when already saved, and shows a filled bookmark icon while saved.
 - Message: opens the student messages page directly to that teacher conversation. If no conversation exists yet, the app creates it by sending the first message once.
 - Hire Me: stores a pending hire request and creates a teacher notification.
+
+## Teacher Documents And Reviews
+
+- Teacher verification documents such as CNIC, degree files, certificates, resumes, and verification uploads are hidden from students and teachers.
+- Only admins can list, view, or download teacher verification documents from Teacher Management.
+- Students can submit teacher reviews with a 1-5 rating and comment.
+- Review responses and review lists include the student name, student profile picture, rating, comment, teacher, and review date.
+- The Home page loads the latest reviews dynamically from `/v1/reviews/getReviews?limit=6`, ordered newest first.
 
 ## Key APIs
 

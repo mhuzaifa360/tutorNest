@@ -2,6 +2,21 @@ import { Review, Student, Teacher } from "../models/index.js";
 import { createNotification } from "./notificationController.js";
 import { approvedTeacherWhere } from "../utils/publicTeacher.js";
 
+const reviewInclude = [
+  {
+    model: Student,
+    as: "student",
+    attributes: ["id", "firstName", "lastName", "profileImage"],
+  },
+  {
+    model: Teacher,
+    as: "teacher",
+    where: approvedTeacherWhere(),
+    attributes: ["id", "firstName", "lastName", "profileImage"],
+    required: true,
+  },
+];
+
 // CREATE REVIEW
 export const createReview = async (req, res) => {
   try {
@@ -51,10 +66,14 @@ export const createReview = async (req, res) => {
       },
     });
 
+    const reviewWithDetails = await Review.findById(review.id, {
+      include: reviewInclude,
+    });
+
     return res.status(201).json({
       success: true,
       message: "Review created successfully",
-      data: review,
+      data: reviewWithDetails,
     });
 
   } catch (error) {
@@ -70,20 +89,7 @@ export const createReview = async (req, res) => {
 export const getReviews = async (req, res) => {
   try {
     const options = {
-      include: [
-        {
-          model: Student,
-          as: "student",
-          attributes: ["id", "firstName", "lastName", "profileImage"],
-        },
-        {
-          model: Teacher,
-          as: "teacher",
-          where: approvedTeacherWhere(),
-          attributes: ["id", "firstName", "lastName", "profileImage"],
-          required: true,
-        },
-      ],
+      include: reviewInclude,
       order: [["createdAt", "DESC"]],
     };
     const limit = Number(req.query.limit);
@@ -108,7 +114,9 @@ export const getReviews = async (req, res) => {
 // GET SINGLE REVIEW
 export const getSingleReview = async (req, res) => {
   try {
-    const review = await Review.findById(req.params.id);
+    const review = await Review.findById(req.params.id, {
+      include: reviewInclude,
+    });
 
     if (!review) {
       return res.status(404).json({
@@ -153,10 +161,14 @@ export const updateReview = async (req, res) => {
 
     await review.update(req.body);
 
+    const updatedReview = await Review.findById(review.id, {
+      include: reviewInclude,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Review updated successfully",
-      data: review,
+      data: updatedReview,
     });
 
   } catch (error) {

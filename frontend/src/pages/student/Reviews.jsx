@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { studentApi } from "../../services/apiService";
 import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 function Reviews() {
   const [reviews, setReviews] = useState([]);
@@ -49,9 +50,32 @@ function Reviews() {
         <div className="grid gap-4 lg:grid-cols-2">
           {reviews.map((review) => (
             <Card key={review.id}>
-              <p className="font-bold text-gray-950 dark:text-white">{review.rating}/5 stars</p>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-sm font-bold text-white">
+                  {getImageUrl(review.student?.profileImage) ? (
+                    <img
+                      src={getImageUrl(review.student.profileImage)}
+                      alt={`${review.student?.firstName || ""} ${review.student?.lastName || ""}`.trim() || "Student"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    `${review.student?.firstName?.[0] || "S"}${review.student?.lastName?.[0] || ""}`
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-950 dark:text-white">
+                    {`${review.student?.firstName || ""} ${review.student?.lastName || ""}`.trim() || "Student"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 font-bold text-gray-950 dark:text-white">{review.rating}/5 stars</p>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{review.comment}</p>
-              <p className="mt-2 text-xs text-gray-500">Teacher #{review.teacherId}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                Teacher: {`${review.teacher?.firstName || ""} ${review.teacher?.lastName || ""}`.trim() || `#${review.teacherId}`}
+              </p>
             </Card>
           ))}
         </div>

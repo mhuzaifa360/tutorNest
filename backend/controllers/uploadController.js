@@ -28,6 +28,22 @@ const findOwnerProfile = async (role, id) => {
   return Model.findById(id);
 };
 
+const isTeacherDocument = (file) =>
+  file?.ownerRole === "teacher" &&
+  (file.type === "document" || file.type === "verification");
+
+const sanitizeTeacherDocument = (file) => {
+  const plain = typeof file.toJSON === "function" ? file.toJSON() : file;
+  if (!isTeacherDocument(plain)) return plain;
+  const { url, ...safeFile } = plain;
+  return safeFile;
+};
+
+const visibleFilesFor = (req, files) => {
+  if (req.user.role === "admin") return files;
+  return files.filter((file) => !isTeacherDocument(file));
+};
+
 export const getMyFiles = async (req, res) => {
   try {
     const files = await FileRecord.findAll({
@@ -35,13 +51,15 @@ export const getMyFiles = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
+    const visibleFiles = visibleFilesFor(req, files);
+
     return res.status(200).json({
       success: true,
       message: "Files fetched successfully",
       data: {
-        files,
-        profileImages: files.filter((file) => file.type === "profile"),
-        documents: files.filter((file) => file.type === "document" || file.type === "verification"),
+        files: visibleFiles,
+        profileImages: visibleFiles.filter((file) => file.type === "profile"),
+        documents: visibleFiles.filter((file) => file.type === "document" || file.type === "verification"),
       },
     });
   } catch (error) {
@@ -122,7 +140,7 @@ export const uploadDocument = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Document uploaded successfully",
-      data: fileRecord,
+      data: sanitizeTeacherDocument(fileRecord),
     });
   } catch (error) {
     return res.status(500).json({
@@ -187,9 +205,17 @@ export const downloadFile = async (req, res) => {
       });
     }
 
+    const isAdmin = req.user.role === "admin";
+
+    if (isTeacherDocument(fileRecord) && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin can view teacher verification documents",
+      });
+    }
+
     const isOwner =
       fileRecord.ownerId === req.user.id && fileRecord.ownerRole === req.user.role;
-    const isAdmin = req.user.role === "admin";
 
     if (!isAdmin && !isOwner) {
       return res.status(403).json({
@@ -216,6 +242,44 @@ export const downloadFile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to download file",
+      errors: [error.message],
+    });
+  }
+};
+
+export const getTeacherDocumentsForAdmin = async (req, res) => {
+  try {
+    const teacher = await Teacher.findById(req.params.teacherId, {
+      attributes: ["id", "firstName", "lastName", "email"],
+    });
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    }
+
+    const documents = await FileRecord.findAll({
+      where: {
+        ownerId: teacher.id,
+        ownerRole: "teacher",
+        type: { $in: ["document", "verification"] },
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        teacher,
+        documents,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch teacher documents",
       errors: [error.message],
     });
   }

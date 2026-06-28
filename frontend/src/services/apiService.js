@@ -81,6 +81,7 @@ export const adminApi = {
       method: "PUT",
       body: JSON.stringify({ status }),
     }),
+  teacherDocuments: (teacherId) => apiRequest(`/upload/teachers/${teacherId}/documents`),
 
   courses: () => apiRequest("/admin/courses"),
   updateCourse: (id, body) =>

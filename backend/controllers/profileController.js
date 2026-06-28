@@ -84,6 +84,15 @@ const findCurrentProfile = async (req) => {
   return Model.findById(req.user.id);
 };
 
+const isTeacherDocument = (file) =>
+  file?.ownerRole === "teacher" &&
+  (file.type === "document" || file.type === "verification");
+
+const visibleFilesFor = (req, files) => {
+  if (req.user.role === "admin") return files;
+  return files.filter((file) => !isTeacherDocument(file));
+};
+
 export const getMyProfile = async (req, res) => {
   try {
     const profile = await findCurrentProfile(req);
@@ -100,14 +109,15 @@ export const getMyProfile = async (req, res) => {
       where: { ownerId: req.user.id, ownerRole: req.user.role },
       order: [["createdAt", "DESC"]],
     });
+    const visibleFiles = visibleFilesFor(req, files);
     return res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
-      user: { ...safeProfile, files },
+      user: { ...safeProfile, files: visibleFiles },
       data: {
-        user: { ...safeProfile, files },
-        files,
-        documents: files.filter((file) => file.type === "document" || file.type === "verification"),
+        user: { ...safeProfile, files: visibleFiles },
+        files: visibleFiles,
+        documents: visibleFiles.filter((file) => file.type === "document" || file.type === "verification"),
       },
     });
   } catch (error) {

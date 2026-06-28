@@ -3,6 +3,7 @@ import upload, { handleUpload } from "../utils/multer.js";
 import {
   getMyFiles,
   downloadFile,
+  getTeacherDocumentsForAdmin,
   uploadProfileImage,
   uploadDocument,
   deleteFile,
@@ -23,6 +24,13 @@ router.get(
   verifyToken,
   authorizeRoles("student", "teacher", "admin"),
   downloadFile
+);
+
+router.get(
+  "/teachers/:teacherId/documents",
+  verifyToken,
+  authorizeRoles("admin"),
+  getTeacherDocumentsForAdmin
 );
 
 router.post(
