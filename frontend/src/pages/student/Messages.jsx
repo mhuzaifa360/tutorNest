@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { messagesApi } from "../../services/apiService";
 import { getToken } from "../../services/authService";
@@ -11,6 +12,7 @@ import { FiPhone, FiVideo } from "react-icons/fi";
 
 function Messages() {
   const { user } = useAuth();
+  const location = useLocation();
   const [conversations, setConversations] = useState([]);
   const [active, setActive] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -24,6 +26,7 @@ function Messages() {
   const scrollRef = useRef(null);
   const socketRef = useRef(null);
   const activeRef = useRef(null);
+  const autoOpenedRef = useRef("");
 
   const loadConversations = async () => {
     if (!user?.id) return;
@@ -41,6 +44,20 @@ function Messages() {
   useEffect(() => {
     loadConversations();
   }, [user?.id]);
+
+  useEffect(() => {
+    const targetId = location.state?.openConversationId;
+    if (!targetId || autoOpenedRef.current === targetId || !conversations.length) return;
+
+    const target = conversations.find(
+      (conversation) => (conversation.conversationId || conversation.key || conversation.id) === targetId
+    );
+
+    if (target) {
+      autoOpenedRef.current = targetId;
+      openConversation(target);
+    }
+  }, [location.state, conversations]);
 
   useEffect(() => {
     activeRef.current = active;

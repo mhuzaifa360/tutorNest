@@ -39,6 +39,14 @@ Teacher verification is enforced on the backend, not only in the frontend UI.
 
 Students do not currently have a verification status field in the TutorNest schema, so student verification is not enabled. If student verification is added later, the same pattern should be applied with a student status column and approved-only filters on student-facing reads.
 
+## Teacher Profile Actions
+
+When a logged-in student opens an approved teacher profile from Tutor Finder, search results, home featured tutors, or Saved Teachers, the profile header shows:
+
+- Save: saves the teacher, removes the teacher when already saved, and shows a filled bookmark icon while saved.
+- Message: opens the student messages page directly to that teacher conversation. If no conversation exists yet, the app creates it by sending the first message once.
+- Hire Me: stores a pending hire request and creates a teacher notification.
+
 ## Key APIs
 
 ### Authentication

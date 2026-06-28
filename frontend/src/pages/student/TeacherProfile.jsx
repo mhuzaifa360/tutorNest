@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FiBookmark, FiMessageSquare, FiStar, FiUserCheck, FiX } from "react-icons/fi";
-import { studentApi } from "../../services/apiService";
+import { messagesApi, studentApi } from "../../services/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { Card, EmptyState, ErrorState, LoadingState } from "../../components/student/StudentStates";
 import { getImageUrl } from "../../utils/getImageUrl";
@@ -62,14 +62,27 @@ function TeacherProfile() {
   const handleMessage = async () => {
     if (!isStudent) return;
     setSending(true);
-    const res = await studentApi.sendMessage({
-      receiverId: teacher.id,
-      receiverRole: "teacher",
-      body: "Hi, I am interested in learning with you.",
-    });
+
+    const conversationId = `teacher-${teacher.id}`;
+    const conversationsRes = await messagesApi.conversations(user.id);
+    const existingConversation = conversationsRes.ok
+      ? (conversationsRes.data || []).find(
+          (conversation) =>
+            (conversation.conversationId || conversation.key || conversation.id) === conversationId
+        )
+      : null;
+
+    const res = existingConversation
+      ? { ok: true }
+      : await messagesApi.send({
+          receiverId: teacher.id,
+          receiverRole: "teacher",
+          body: "Hi, I am interested in learning with you.",
+        });
+
     setSending(false);
     if (res.ok) {
-      navigate("/student/messages");
+      navigate("/student/messages", { state: { openConversationId: conversationId } });
     } else {
       setStatusMessage(res.message || "Unable to open chat.");
     }
