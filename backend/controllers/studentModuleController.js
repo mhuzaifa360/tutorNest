@@ -7,12 +7,15 @@ import {
   Notification,
   Review,
   SavedTeacher,
+  Student,
   Teacher,
 } from "../models/index.js";
 import {
   acceptApplication,
   rejectApplication,
 } from "./applicationController.js";
+import { createNotification } from "./notificationController.js";
+import { approvedTeacherWhere, publicTeacherAttributes, sanitizeTeacher } from "../utils/publicTeacher.js";
 
 const parseNumber = (value) => {
   if (value === undefined || value === null || value === "") return null;
@@ -27,7 +30,7 @@ const withTeacherRating = async (teacher) => {
       ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) /
         reviews.length
       : 0;
-  const { password, ...safeTeacher } = teacher.toJSON();
+  const safeTeacher = sanitizeTeacher(teacher);
   return {
     ...safeTeacher,
     rating: Number(rating.toFixed(1)),
@@ -55,10 +58,17 @@ export const getStudentOverview = async (req, res) => {
         include: {
           model: Teacher,
           as: "teacher",
+          where: approvedTeacherWhere(),
           attributes: ["id", "firstName", "lastName"],
+          required: true,
         },
       }),
-      Teacher.findAll({ limit: 4, order: [["createdAt", "DESC"]] }),
+      Teacher.findAll({
+        where: approvedTeacherWhere(),
+        attributes: publicTeacherAttributes,
+        limit: 4,
+        order: [["createdAt", "DESC"]],
+      }),
       Job.findAll({ where: { studentId }, limit: 4, order: [["createdAt", "DESC"]] }),
       Notification.findAll({
         where: { userId: studentId },
@@ -76,7 +86,9 @@ export const getStudentOverview = async (req, res) => {
           include: {
             model: Teacher,
             as: "tutor",
+            where: approvedTeacherWhere(),
             attributes: ["id", "firstName", "lastName", "experience", "hourlyFee"],
+            required: true,
           },
         })
       : [];
@@ -109,7 +121,7 @@ export const browseTeachers = async (req, res) => {
     const maxFee = parseNumber(req.query.maxFee);
     const minExperience = parseNumber(req.query.minExperience);
     const minRating = parseNumber(req.query.minRating);
-    const where = {};
+    const where = approvedTeacherWhere();
 
     if (city) where.city = { $like: `%${city}%` };
     if (province) where.province = province;
@@ -128,7 +140,11 @@ export const browseTeachers = async (req, res) => {
       ];
     }
 
-    const teachers = await Teacher.findAll({ where, order: [["createdAt", "DESC"]] });
+    const teachers = await Teacher.findAll({
+      where,
+      attributes: publicTeacherAttributes,
+      order: [["createdAt", "DESC"]],
+    });
     const withRatings = await Promise.all(teachers.map(withTeacherRating));
     const filtered = withRatings.filter((teacher) => {
       const subjectMatch = subject
@@ -148,16 +164,34 @@ export const browseTeachers = async (req, res) => {
 
 export const getTeacherDetail = async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.params.id);
+    const teacher = await Teacher.findOne({
+      where: approvedTeacherWhere({ id: req.params.id }),
+      attributes: publicTeacherAttributes,
+    });
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
     const reviews = await Review.findAll({
       where: { teacherId: teacher.id },
+      include: {
+        model: Student,
+        as: "student",
+        attributes: ["id", "firstName", "lastName", "profileImage"],
+      },
       order: [["createdAt", "DESC"]],
     });
     const detail = await withTeacherRating(teacher);
-    return res.status(200).json({ success: true, data: { ...detail, reviews } });
+    const saved =
+      req.user?.role === "student"
+        ? await SavedTeacher.findOne({
+            where: { studentId: req.user.id, teacherId: teacher.id },
+          })
+        : null;
+
+    return res.status(200).json({
+      success: true,
+      data: { ...detail, reviews, isSaved: Boolean(saved) },
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -169,7 +203,10 @@ export const saveTeacher = async (req, res) => {
     if (!teacherId) {
       return res.status(400).json({ success: false, message: "teacherId is required" });
     }
-    const teacher = await Teacher.findById(teacherId);
+    const teacher = await Teacher.findOne({
+      where: approvedTeacherWhere({ id: teacherId }),
+      attributes: publicTeacherAttributes,
+    });
     if (!teacher) {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
@@ -177,10 +214,24 @@ export const saveTeacher = async (req, res) => {
       where: { studentId: req.user.id, teacherId },
       defaults: { studentId: req.user.id, teacherId },
     });
+
+    if (created) {
+      const student = await Student.findById(req.user.id);
+      const studentName =
+        `${student?.firstName || ""} ${student?.lastName || ""}`.trim() || "A student";
+      await createNotification({
+        userId: teacherId,
+        userRole: "teacher",
+        title: "Teacher profile saved",
+        message: `${studentName} saved your profile.`,
+        type: "system",
+      }).catch(() => null);
+    }
+
     return res.status(created ? 201 : 200).json({
       success: true,
       message: created ? "Teacher saved" : "Teacher already saved",
-      data: saved,
+      data: { ...saved.toJSON(), saved: true },
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -191,7 +242,13 @@ export const getSavedTeachers = async (req, res) => {
   try {
     const saved = await SavedTeacher.findAll({
       where: { studentId: req.user.id },
-      include: { model: Teacher, as: "teacher" },
+      include: {
+        model: Teacher,
+        as: "teacher",
+        where: approvedTeacherWhere(),
+        attributes: publicTeacherAttributes,
+        required: true,
+      },
       order: [["createdAt", "DESC"]],
     });
     const teachers = await Promise.all(
@@ -241,7 +298,9 @@ export const getJobApplicationsForStudent = async (req, res) => {
             {
               model: Teacher,
               as: "tutor",
+              where: approvedTeacherWhere(),
               attributes: ["id", "firstName", "lastName", "experience", "hourlyFee", "qualification"],
+              required: true,
             },
             { model: Job, as: "job", attributes: ["id", "title", "subject", "budget"] },
           ],
@@ -323,6 +382,23 @@ export const sendMessage = async (req, res) => {
       receiverRole,
       body: body.trim(),
     });
+    const notification = await createNotification({
+      userId: receiverId,
+      userRole: receiverRole,
+      title: "New message",
+      message: "You received a new message.",
+      type: "message",
+      metadata: {
+        senderId: req.user.id,
+        senderRole: req.user.role,
+      },
+    }).catch(() => null);
+    req.app?.get("io")?.to(`user_${receiverRole}_${receiverId}`).emit("direct_message", {
+      ...message.toJSON(),
+    });
+    if (notification) {
+      req.app?.get("io")?.to(`user_${receiverRole}_${receiverId}`).emit("notification_created", notification.toJSON());
+    }
     return res.status(201).json({ success: true, data: message });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

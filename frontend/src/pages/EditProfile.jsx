@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiArrowLeft, FiCheckCircle, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiExternalLink, FiFileText, FiSave, FiTrash2, FiUpload } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import { profileApi } from "../services/apiService";
+import { getImageUrl } from "../utils/getImageUrl";
 
 const PROVINCES = [
   "Punjab",
@@ -49,11 +51,23 @@ const fieldClass =
 
 const labelClass = "text-sm font-semibold text-gray-800 dark:text-gray-200";
 
+const readImageFile = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 function EditProfile() {
   const { user, updateUser } = useAuth();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [profileImagePreview, setProfileImagePreview] = useState(getImageUrl(user?.profileImage));
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [documentFiles, setDocumentFiles] = useState([]);
 
   const initialForm = useMemo(
     () => ({
@@ -77,11 +91,58 @@ function EditProfile() {
 
   const [form, setForm] = useState(initialForm);
 
+  useEffect(() => {
+    setProfileImagePreview(getImageUrl(user?.profileImage));
+  }, [user?.profileImage]);
+
+  useEffect(() => {
+    const loadFiles = async () => {
+      const response = await profileApi.files();
+      if (response.ok) setFiles(response.data?.files || []);
+    };
+    loadFiles();
+  }, []);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError("");
     setMessage("");
+  };
+
+  const handleProfileImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file.");
+      return;
+    }
+    const preview = await readImageFile(file);
+    setProfileImagePreview(preview);
+    setProfileImageFile(file);
+    setError("");
+    setMessage("");
+  };
+
+  const handleDocumentChange = (event) => {
+    setDocumentFiles(Array.from(event.target.files || []));
+    setError("");
+    setMessage("");
+  };
+
+  const refreshFiles = async () => {
+    const response = await profileApi.files();
+    if (response.ok) setFiles(response.data?.files || []);
+  };
+
+  const deleteDocument = async (id) => {
+    const response = await profileApi.deleteFile(id);
+    if (response.ok) {
+      setFiles((prev) => prev.filter((file) => file.id !== id));
+      setMessage("Document deleted successfully.");
+    } else {
+      setError(response.message || "Unable to delete document.");
+    }
   };
 
   const validate = () => {
@@ -133,14 +194,42 @@ function EditProfile() {
     }
 
     const previousUser = user;
-    const optimisticUser = { ...user, ...payload };
+    const optimisticUser = {
+      ...user,
+      ...payload,
+      profileImage: profileImagePreview || user?.profileImage,
+    };
 
     try {
       setSaving(true);
       updateUser(optimisticUser);
 
+      let uploadedProfileImage = "";
+      if (profileImageFile) {
+        const formData = new FormData();
+        formData.append("file", profileImageFile);
+        const uploadResponse = await profileApi.uploadProfileImage(formData);
+        if (!uploadResponse.ok) {
+          updateUser(previousUser);
+          setError(uploadResponse.message || "Profile image upload failed.");
+          return;
+        }
+        uploadedProfileImage = uploadResponse.data?.url || "";
+      }
+
+      for (const file of documentFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadResponse = await profileApi.uploadDocument(formData);
+        if (!uploadResponse.ok) {
+          updateUser(previousUser);
+          setError(uploadResponse.message || `Unable to upload ${file.name}.`);
+          return;
+        }
+      }
+
       const response = await profileApi.update(payload);
-    const profileUser = response.user || response.data?.user || response.data || null;
+      const profileUser = response.user || response.data?.user || response.data || null;
 
       if (!response.ok || !response.success) {
         updateUser(previousUser);
@@ -148,18 +237,33 @@ function EditProfile() {
         return;
       }
 
-      updateUser(profileUser || optimisticUser);
+      updateUser(
+        profileUser
+          ? { ...profileUser, profileImage: uploadedProfileImage || profileUser.profileImage }
+          : { ...optimisticUser, profileImage: uploadedProfileImage || optimisticUser.profileImage }
+      );
+      await refreshFiles();
+      setDocumentFiles([]);
+      setProfileImageFile(null);
       setMessage("Profile updated successfully.");
     } finally {
       setSaving(false);
     }
   };
 
+  const documents = files.filter((file) => file.type === "document" || file.type === "verification");
+  const profilePath =
+    user?.role === "teacher"
+      ? "/teacher/profile"
+      : user?.role === "admin"
+      ? "/admin/profile"
+      : "/student/profile";
+
   return (
     <section className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <Link
-          to="/profile"
+          to={profilePath}
           className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
         >
           <FiArrowLeft />
@@ -189,6 +293,96 @@ function EditProfile() {
                 {error}
               </div>
             )}
+
+            <div className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 dark:border-slate-800">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-xl font-bold text-white">
+                {profileImagePreview ? (
+                  <img
+                    src={profileImagePreview}
+                    alt={user?.firstName || "Profile"}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  user?.initials || "U"
+                )}
+              </div>
+              <label className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-slate-700 dark:text-gray-200">
+                Change Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfileImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-slate-800">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-950 dark:text-white">User Documents</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    CNIC, degree, certificates, resume, or verification documents.
+                  </p>
+                </div>
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-slate-700 dark:text-gray-200">
+                  <FiUpload />
+                  Upload
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx"
+                    onChange={handleDocumentChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {documentFiles.length > 0 && (
+                <p className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-300">
+                  {documentFiles.length} new document{documentFiles.length > 1 ? "s" : ""} selected
+                </p>
+              )}
+              <div className="mt-4 grid gap-2">
+                {documents.length ? (
+                  documents.map((document) => (
+                    <div
+                      key={document.id}
+                      className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 p-3 dark:bg-slate-800/70"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                          <FiFileText />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                            {document.originalName}
+                          </p>
+                          <a
+                            href={getImageUrl(document.url)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-300"
+                          >
+                            <FiExternalLink />
+                            Open
+                          </a>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteDocument(document.id)}
+                        className="rounded-lg border border-red-200 p-2 text-red-600 transition hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                        title="Delete document"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No documents uploaded yet.</p>
+                )}
+              </div>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2">

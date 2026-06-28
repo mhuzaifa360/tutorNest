@@ -3,24 +3,33 @@ import { Notification } from "../models/index.js";
 // CREATE NOTIFICATION
 export const createNotification = async ({
   userId,
+  userRole,
   title,
   message,
   type,
+  metadata,
 }) => {
   return await Notification.create({
     userId,
+    userRole,
     title,
     message,
     type,
+    metadata,
   });
 };
+
+const currentUserNotificationWhere = (req) => ({
+  userId: req.user.id,
+  $or: [{ userRole: req.user.role }, { userRole: null }],
+});
 
 export const getNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
 
     const notifications = await Notification.findAll({
-      where: { userId },
+      where: currentUserNotificationWhere(req),
       order: [["createdAt", "DESC"]],
     });
 
@@ -49,7 +58,10 @@ export const markAsRead = async (req, res) => {
       });
     }
 
-    if (notification.userId !== req.user.id) {
+    if (
+      notification.userId !== req.user.id ||
+      (notification.userRole && notification.userRole !== req.user.role)
+    ) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this notification",
@@ -83,7 +95,11 @@ export const getUnreadCount = async (req, res) => {
     }
 
     const count = await Notification.count({
-      where: { userId, isRead: false },
+      where: {
+        userId,
+        isRead: false,
+        $or: [{ userRole: req.user.role }, { userRole: null }],
+      },
     });
 
     return res.status(200).json({
@@ -103,7 +119,12 @@ export const markAllAsRead = async (req, res) => {
   try {
     await Notification.update(
       { isRead: true },
-      { where: { userId: req.user.id, isRead: false } }
+      {
+        where: {
+          ...currentUserNotificationWhere(req),
+          isRead: false,
+        },
+      }
     );
 
     return res.status(200).json({
@@ -126,7 +147,12 @@ export const markRead = async (req, res) => {
     if (all || (!id && !ids)) {
       await Notification.update(
         { isRead: true },
-        { where: { userId: req.user.id, isRead: false } }
+        {
+          where: {
+            ...currentUserNotificationWhere(req),
+            isRead: false,
+          },
+        }
       );
       return res.status(200).json({
         success: true,
@@ -141,7 +167,7 @@ export const markRead = async (req, res) => {
       {
         where: {
           id: { $in: targetIds.map(Number).filter(Boolean) },
-          userId: req.user.id,
+          ...currentUserNotificationWhere(req),
         },
       }
     );
@@ -171,7 +197,10 @@ export const deleteNotification = async (req, res) => {
       });
     }
 
-    if (notification.userId !== req.user.id) {
+    if (
+      notification.userId !== req.user.id ||
+      (notification.userRole && notification.userRole !== req.user.role)
+    ) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to delete this notification",

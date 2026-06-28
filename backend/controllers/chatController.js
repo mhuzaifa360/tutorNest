@@ -1,6 +1,7 @@
 import SequelizePkg from "sequelize";
 const { literal } = SequelizePkg;
 import { Application, Conversation, ChatMessage, Job, Student, Teacher } from "../models/index.js";
+import { approvedTeacherWhere } from "../utils/publicTeacher.js";
 
 const validRoles = ["student", "teacher"];
 
@@ -36,6 +37,12 @@ const hasAcceptedApplication = async (studentId, teacherId) => {
         model: Job,
         as: "job",
         where: { studentId },
+        required: true,
+      },
+      {
+        model: Teacher,
+        as: "tutor",
+        where: approvedTeacherWhere({ id: teacherId }),
         required: true,
       },
     ],
@@ -91,7 +98,13 @@ export const createOrGetConversation = async (req, res) => {
     const result = await Conversation.findById(conversation.id, {
       include: [
         { model: Student, as: "student", attributes: ["id", "firstName", "lastName", "profileImage"] },
-        { model: Teacher, as: "teacher", attributes: ["id", "firstName", "lastName", "profileImage"] },
+        {
+          model: Teacher,
+          as: "teacher",
+          where: req.user.role === "student" ? approvedTeacherWhere() : undefined,
+          attributes: ["id", "firstName", "lastName", "profileImage"],
+          required: req.user.role === "student",
+        },
       ],
     });
 
@@ -118,7 +131,13 @@ export const getConversations = async (req, res) => {
       where,
       include: [
         { model: Student, as: "student", attributes: ["id", "firstName", "lastName", "profileImage"] },
-        { model: Teacher, as: "teacher", attributes: ["id", "firstName", "lastName", "profileImage"] },
+        {
+          model: Teacher,
+          as: "teacher",
+          where: req.user.role === "student" ? approvedTeacherWhere() : undefined,
+          attributes: ["id", "firstName", "lastName", "profileImage"],
+          required: req.user.role === "student",
+        },
       ],
       order: [["lastMessageAt", "DESC"]],
       attributes: {

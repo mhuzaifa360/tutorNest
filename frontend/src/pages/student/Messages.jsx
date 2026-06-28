@@ -1,8 +1,13 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
 import { useAuth } from "../../context/AuthContext";
 import { messagesApi } from "../../services/apiService";
+import { getToken } from "../../services/authService";
 import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
+import { getImageUrl } from "../../utils/getImageUrl";
+import { FiPhone, FiVideo } from "react-icons/fi";
 
 function Messages() {
   const { user } = useAuth();
@@ -14,7 +19,11 @@ function Messages() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [callStatus, setCallStatus] = useState("");
   const scrollRef = useRef(null);
+  const socketRef = useRef(null);
+  const activeRef = useRef(null);
 
   const loadConversations = async () => {
     if (!user?.id) return;
@@ -31,6 +40,43 @@ function Messages() {
 
   useEffect(() => {
     loadConversations();
+  }, [user?.id]);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !user?.id) return undefined;
+
+    const socket = io("http://localhost:5000", { auth: { token } });
+    socketRef.current = socket;
+
+    socket.on("direct_message", (message) => {
+      const current = activeRef.current;
+      const currentId = current?.conversationId || current?.key || current?.id;
+      const incomingId = `${message.senderRole}-${message.senderId}`;
+      if (currentId === incomingId) {
+        setMessages((prev) => [...prev, message]);
+        setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+      loadConversations();
+    });
+
+    socket.on("incoming_call", (payload) => {
+      setIncomingCall(payload);
+      setCallStatus(`${payload.callType === "video" ? "Video" : "Voice"} call incoming`);
+    });
+
+    socket.on("call_accept", () => setCallStatus("Call accepted. Connecting..."));
+    socket.on("call_reject", () => setCallStatus("Call rejected."));
+    socket.on("call_end", () => {
+      setIncomingCall(null);
+      setCallStatus("Call ended.");
+    });
+
+    return () => socket.disconnect();
   }, [user?.id]);
 
   const openConversation = async (conversation) => {
@@ -67,6 +113,30 @@ function Messages() {
     setSending(false);
   };
 
+  const getActiveParticipant = () => {
+    const conversationId = active?.conversationId || active?.key || active?.id || "";
+    const [receiverRole, receiverId] = conversationId.split("-");
+    if (!receiverRole || !receiverId) return null;
+    return { receiverRole, receiverId: Number(receiverId) };
+  };
+
+  const startCall = (callType) => {
+    const participant = getActiveParticipant();
+    if (!participant) return;
+    socketRef.current?.emit("call_invite", { ...participant, callType });
+    setCallStatus(`${callType === "video" ? "Video" : "Voice"} call ringing...`);
+  };
+
+  const answerCall = (accepted) => {
+    if (!incomingCall) return;
+    socketRef.current?.emit(accepted ? "call_accept" : "call_reject", {
+      receiverRole: incomingCall.callerRole,
+      receiverId: incomingCall.callerId,
+    });
+    setCallStatus(accepted ? "Call accepted. Connecting..." : "Call rejected.");
+    if (!accepted) setIncomingCall(null);
+  };
+
   return (
     <PageContainer className="animate-fade-in space-y-5">
       <PageHeader
@@ -100,10 +170,23 @@ function Messages() {
                         : "border-gray-200 dark:border-slate-800"
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-gray-950 dark:text-white">
-                        {conversation.name || conversation.participant?.name || conversationId}
-                      </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-xs font-bold text-white">
+                          {getImageUrl(conversation.participant?.profileImage) ? (
+                            <img
+                              src={getImageUrl(conversation.participant.profileImage)}
+                              alt={conversation.name || "User"}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            (conversation.name || conversation.participant?.name || "U").charAt(0)
+                          )}
+                        </div>
+                        <p className="truncate font-semibold text-gray-950 dark:text-white">
+                          {conversation.name || conversation.participant?.name || conversationId}
+                        </p>
+                      </div>
                       {conversation.unread > 0 && (
                         <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
                           {conversation.unread}
@@ -128,6 +211,44 @@ function Messages() {
             <h2 className="mb-3 font-bold text-gray-950 dark:text-white">
               {active?.name || active?.participant?.name || "Chat Window"}
             </h2>
+            {active && (
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 p-3 dark:border-slate-800">
+                <div className="text-sm text-gray-500">
+                  {callStatus || "Ready for messages and calls"}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startCall("voice")}
+                    className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold dark:border-slate-700"
+                  >
+                    <FiPhone /> Voice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => startCall("video")}
+                    className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold dark:border-slate-700"
+                  >
+                    <FiVideo /> Video
+                  </button>
+                </div>
+              </div>
+            )}
+            {incomingCall && (
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-blue-50 p-3 text-sm dark:bg-blue-950/30">
+                <span>
+                  Incoming {incomingCall.callType} call from {incomingCall.callerRole}
+                </span>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => answerCall(true)} className="rounded-lg bg-green-600 px-3 py-1.5 font-semibold text-white">
+                    Accept
+                  </button>
+                  <button type="button" onClick={() => answerCall(false)} className="rounded-lg bg-red-600 px-3 py-1.5 font-semibold text-white">
+                    Reject
+                  </button>
+                </div>
+              </div>
+            )}
 
             {active ? (
               <>

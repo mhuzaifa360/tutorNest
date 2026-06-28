@@ -1,5 +1,6 @@
 import Admin from "../models/adminModel.js";
 import { Message, Student, Teacher } from "../models/index.js";
+import { createNotification } from "./notificationController.js";
 
 const roleModels = {
   student: Student,
@@ -50,6 +51,25 @@ export const sendMessage = async (req, res) => {
       receiverRole,
       body: body.trim(),
     });
+
+    const notification = await createNotification({
+      userId: receiverId,
+      userRole: receiverRole,
+      title: "New message",
+      message: "You received a new message.",
+      type: "message",
+      metadata: {
+        senderId: req.user.id,
+        senderRole: req.user.role,
+      },
+    }).catch(() => null);
+
+    req.app?.get("io")?.to(`user_${receiverRole}_${receiverId}`).emit("direct_message", {
+      ...message.toJSON(),
+    });
+    if (notification) {
+      req.app?.get("io")?.to(`user_${receiverRole}_${receiverId}`).emit("notification_created", notification.toJSON());
+    }
 
     return res.status(201).json({ success: true, data: message });
   } catch (error) {

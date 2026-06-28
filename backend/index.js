@@ -29,6 +29,8 @@ import emailRoutes from "./routes/emailRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import verificationRoutes from "./routes/verificationRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import hireRequestRoutes from "./routes/hireRequestRoutes.js";
+import meetingRoutes from "./routes/meetingRoutes.js";
 
 // DB CONNECTION
 import { connectDB, sequelize } from "./config/database.js";
@@ -40,7 +42,7 @@ const PORT = process.env.PORT || 5000;
 
 // STATIC FILES (UPLOADS)
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
-app.use("/uploads", express.static(uploadDir));
+app.use("/uploads/profile", express.static(`${uploadDir}/profile`));
 
 // MIDDLEWARES
 app.use(cors({
@@ -79,6 +81,8 @@ app.use(`${API_PREFIX}/email`, emailRoutes); // email service routes
 app.use(`${API_PREFIX}/upload`, uploadRoutes); // upload routes
 app.use(`${API_PREFIX}/verification`, verificationRoutes); // verification workflow routes
 app.use(`${API_PREFIX}/payments`, paymentRoutes); // payment service routes
+app.use(`${API_PREFIX}/hire-requests`, hireRequestRoutes); // direct teacher hiring requests
+app.use(`${API_PREFIX}/meetings`, meetingRoutes); // student-teacher meeting scheduling
  
 // HEALTH CHECK
 app.get("/", (req, res) => {
@@ -114,7 +118,8 @@ const startServer = async () => {
 
     // Initialize Socket.io
     try {
-      setupSocket(server);
+      const io = setupSocket(server);
+      app.set("io", io);
       console.log("📡 Socket.io initialized");
     } catch (err) {
       console.warn("Socket.io failed to initialize:", err.message);

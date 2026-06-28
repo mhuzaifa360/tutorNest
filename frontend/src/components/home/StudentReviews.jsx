@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Typography from "../common/Typography";
 import { FaStar } from "react-icons/fa";
 import { studentApi } from "../../services/apiService";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 function StudentReviews() {
   const [reviews, setReviews] = useState([]);
@@ -12,7 +13,7 @@ function StudentReviews() {
   useEffect(() => {
     const loadReviews = async () => {
       setLoading(true);
-      const res = await studentApi.reviews();
+      const res = await studentApi.reviews({ limit: 6 });
       if (res.ok) {
         setReviews(res.data || []);
         setError("");
@@ -48,7 +49,16 @@ function StudentReviews() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviews.map((item) => (
+            {reviews.map((item) => {
+              const studentName =
+                `${item.student?.firstName || ""} ${item.student?.lastName || ""}`.trim() ||
+                "Student";
+              const teacherName =
+                `${item.teacher?.firstName || ""} ${item.teacher?.lastName || ""}`.trim() ||
+                "Teacher";
+              const studentImage = getImageUrl(item.student?.profileImage);
+
+              return (
               <div
                 key={item.id}
                 className="bg-lightGreyBG dark:bg-slate-800 p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col gap-5"
@@ -64,20 +74,25 @@ function StudentReviews() {
                 </Typography>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-                    {item.teacherId ? `T${item.teacherId}` : "S"}
+                  <div className="w-10 h-10 overflow-hidden rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                    {studentImage ? (
+                      <img src={studentImage} alt={studentName} className="h-full w-full object-cover" />
+                    ) : (
+                      studentName.charAt(0)
+                    )}
                   </div>
                   <div>
                     <Typography className="font-semibold text-textBlack dark:text-white">
-                      Teacher #{item.teacherId || "Unknown"}
+                      {studentName}
                     </Typography>
                     <Typography className="text-sm text-textGrey dark:text-gray-400">
-                      {item.studentId ? `Reviewed by student #${item.studentId}` : "Student review"}
+                      Reviewed {teacherName} - {new Date(item.createdAt).toLocaleDateString()}
                     </Typography>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

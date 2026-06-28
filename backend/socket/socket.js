@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import { Application, Conversation, ChatMessage, Job } from "../models/index.js";
+import { Application, Conversation, ChatMessage, Job, Teacher } from "../models/index.js";
+import { approvedTeacherWhere } from "../utils/publicTeacher.js";
 
 const getSocketToken = (socket) => {
   const auth = socket.handshake.auth || {};
@@ -28,6 +29,12 @@ const hasAcceptedApplication = async (studentId, teacherId) => {
         where: { studentId },
         required: true,
       },
+      {
+        model: Teacher,
+        as: "tutor",
+        where: approvedTeacherWhere({ id: teacherId }),
+        required: true,
+      },
     ],
   });
   return Boolean(accepted);
@@ -48,6 +55,8 @@ const createChatPayload = (message) => ({
   isRead: message.isRead,
   createdAt: message.createdAt,
 });
+
+const userRoom = (role, id) => `user_${role}_${id}`;
 
 export const setupSocket = (server) => {
   const onlineUsers = new Map();
@@ -78,9 +87,53 @@ export const setupSocket = (server) => {
   io.on("connection", (socket) => {
     const userKey = `${socket.user.role}:${socket.user.id}`;
     onlineUsers.set(userKey, socket.id);
+    socket.join(userRoom(socket.user.role, socket.user.id));
+    socket.emit("presence_snapshot", {
+      online: Array.from(onlineUsers.keys()).map((key) => {
+        const [role, id] = key.split(":");
+        return { role, userId: Number(id) };
+      }),
+    });
     socket.broadcast.emit("user_online", {
       userId: socket.user.id,
       role: socket.user.role,
+    });
+
+    socket.on("typing_direct", ({ receiverRole, receiverId }) => {
+      if (!receiverRole || !receiverId) return;
+      socket.to(userRoom(receiverRole, receiverId)).emit("typing_direct", {
+        senderId: socket.user.id,
+        senderRole: socket.user.role,
+      });
+    });
+
+    socket.on("stop_typing_direct", ({ receiverRole, receiverId }) => {
+      if (!receiverRole || !receiverId) return;
+      socket.to(userRoom(receiverRole, receiverId)).emit("stop_typing_direct", {
+        senderId: socket.user.id,
+        senderRole: socket.user.role,
+      });
+    });
+
+    socket.on("call_invite", ({ receiverRole, receiverId, callType = "voice" }) => {
+      if (!receiverRole || !receiverId || !["voice", "video"].includes(callType)) return;
+      socket.to(userRoom(receiverRole, receiverId)).emit("incoming_call", {
+        callerId: socket.user.id,
+        callerRole: socket.user.role,
+        callType,
+        startedAt: new Date(),
+      });
+    });
+
+    ["call_accept", "call_reject", "call_end", "webrtc_signal"].forEach((eventName) => {
+      socket.on(eventName, ({ receiverRole, receiverId, ...payload }) => {
+        if (!receiverRole || !receiverId) return;
+        socket.to(userRoom(receiverRole, receiverId)).emit(eventName, {
+          senderId: socket.user.id,
+          senderRole: socket.user.role,
+          ...payload,
+        });
+      });
     });
 
     socket.on("join_room", async ({ conversationId }) => {

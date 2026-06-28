@@ -1,6 +1,8 @@
 import express from "express";
-import upload from "../utils/multer.js";
+import upload, { handleUpload } from "../utils/multer.js";
 import {
+  getMyFiles,
+  downloadFile,
   uploadProfileImage,
   uploadDocument,
   deleteFile,
@@ -8,6 +10,20 @@ import {
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+router.get(
+  "/files",
+  verifyToken,
+  authorizeRoles("student", "teacher", "admin"),
+  getMyFiles
+);
+
+router.get(
+  "/files/:id/download",
+  verifyToken,
+  authorizeRoles("student", "teacher", "admin"),
+  downloadFile
+);
 
 router.post(
   "/profile-image",
@@ -17,7 +33,7 @@ router.post(
     req.uploadCategory = "profile";
     next();
   },
-  upload.single("file"),
+  handleUpload(upload.single("file")),
   uploadProfileImage
 );
 
@@ -29,7 +45,7 @@ router.post(
     req.uploadCategory = "document";
     next();
   },
-  upload.single("file"),
+  handleUpload(upload.single("file")),
   uploadDocument
 );
 

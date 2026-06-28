@@ -1,5 +1,6 @@
 import SequelizePkg from "sequelize";
 import { Application, Job, Student, Teacher } from "../models/index.js";
+import { approvedTeacherWhere, publicTeacherAttributes } from "../utils/publicTeacher.js";
 
 const { literal } = SequelizePkg;
 
@@ -102,7 +103,9 @@ const jobInclude = [
   {
     model: Teacher,
     as: "assignedTeacher",
-    attributes: ["id", "firstName", "lastName", "profileImage"],
+    where: approvedTeacherWhere(),
+    attributes: publicTeacherAttributes,
+    required: false,
   },
 ];
 
@@ -178,7 +181,9 @@ export const getSingleJob = async (req, res) => {
             {
               model: Teacher,
               as: "tutor",
-              attributes: ["id", "firstName", "lastName", "qualification", "experience", "hourlyFee", "profileImage", "subjects"],
+              where: approvedTeacherWhere(),
+              attributes: publicTeacherAttributes,
+              required: true,
             },
           ],
         },

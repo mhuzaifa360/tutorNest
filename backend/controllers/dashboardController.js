@@ -13,6 +13,7 @@ import {
   Student,
   Teacher,
 } from "../models/index.js";
+import { approvedTeacherWhere, publicTeacherAttributes, sanitizeTeacher } from "../utils/publicTeacher.js";
 
 const assertSelfOrAdmin = (req, res, targetId) => {
   const id = Number(targetId);
@@ -34,7 +35,7 @@ const withTeacherRating = async (teacher) => {
       ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) /
         reviews.length
       : 0;
-  const { password, ...safeTeacher } = teacher.toJSON();
+  const safeTeacher = sanitizeTeacher(teacher);
   return {
     ...safeTeacher,
     rating: Number(rating.toFixed(1)),
@@ -108,10 +109,17 @@ export const getStudentDashboard = async (req, res) => {
           include: {
             model: Teacher,
             as: "teacher",
-            attributes: ["id", "firstName", "lastName"],
+            where: approvedTeacherWhere(),
+            attributes: publicTeacherAttributes,
+            required: true,
           },
         }),
-        Teacher.findAll({ limit: 4, order: [["createdAt", "DESC"]] }),
+        Teacher.findAll({
+          where: approvedTeacherWhere(),
+          attributes: publicTeacherAttributes,
+          limit: 4,
+          order: [["createdAt", "DESC"]],
+        }),
         Notification.findAll({
           where: { userId: studentId },
           limit: 5,
@@ -131,7 +139,9 @@ export const getStudentDashboard = async (req, res) => {
             {
               model: Teacher,
               as: "tutor",
-              attributes: ["id", "firstName", "lastName", "experience", "hourlyFee"],
+              where: approvedTeacherWhere(),
+              attributes: ["id", "firstName", "lastName", "experience", "hourlyFee", "profileImage"],
+              required: true,
             },
           ],
         }),

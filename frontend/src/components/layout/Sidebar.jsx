@@ -1,21 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
-  FiBell,
   FiBriefcase,
   FiClipboard,
-  FiDollarSign,
   FiHome,
   FiLogOut,
   FiMessageSquare,
   FiSearch,
   FiSettings,
-  FiStar,
   FiUser,
   FiUsers,
   FiBook,
+  FiHeart,
 } from "react-icons/fi";
 import { useState, useEffect } from "react";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -49,7 +48,6 @@ const Sidebar = () => {
         { name: "Dashboard", path: "/teacher", icon: <FiHome /> },
         { name: "My Students", path: "/teacher/students", icon: <FiUsers /> },
         { name: "Courses", path: "/teacher/courses", icon: <FiBook /> },
-        { name: "Earnings", path: "/teacher/earnings", icon: <FiDollarSign /> },
         { name: "Messages", path: "/teacher/messages", icon: <FiMessageSquare /> },
         { name: "Profile", path: "/teacher/profile", icon: <FiUser /> },
         { name: "Settings", path: "/teacher/settings", icon: <FiSettings /> },
@@ -59,6 +57,7 @@ const Sidebar = () => {
     return [
       { name: "Dashboard", path: "/student", icon: <FiHome /> },
       { name: "Find Tutors", path: "/student/tutors", icon: <FiSearch /> },
+      { name: "Saved Teachers", path: "/student/saved-tutors", icon: <FiHeart /> },
       { name: "Courses", path: "/student/courses", icon: <FiBook /> },
       { name: "My Courses", path: "/student/my-courses", icon: <FiClipboard /> },
       { name: "Jobs", path: "/student/jobs", icon: <FiBriefcase /> },
@@ -101,8 +100,16 @@ const Sidebar = () => {
             {roleTitle}
           </p>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-white">
-              {user?.initials || "U"}
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white/10 text-lg font-bold text-white">
+              {getImageUrl(user?.profileImage) ? (
+                <img
+                  src={getImageUrl(user.profileImage)}
+                  alt={user?.firstName || "User"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                user?.initials || "U"
+              )}
             </div>
             <div className="min-w-0">
               <p className="truncate text-[15px] font-bold leading-tight text-white">

@@ -19,7 +19,6 @@ const TeacherLayout = () => {
         <nav className="flex flex-col gap-3">
           <Link to="/teacher/dashboard">Dashboard</Link>
           <Link to="/teacher/students">My Students</Link>
-          <Link to="/teacher/earnings">Earnings</Link>
         </nav>
       </aside>
 

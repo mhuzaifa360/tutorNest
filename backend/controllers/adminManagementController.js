@@ -223,17 +223,9 @@ export const getAdminTeachers = async (_req, res) => {
 
 export const setTeacherStatus = async (req, res) => {
   try {
-    const { status, rejectionReason } = req.body;
+    const { status } = req.body;
     if (!["pending", "approved", "rejected"].includes(status)) {
       return res.status(400).json({ success: false, message: "Invalid status" });
-    }
-
-    if (status === "rejected" && !String(rejectionReason || "").trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Rejection reason is required",
-        errors: ["Rejection reason is required"],
-      });
     }
 
     const teacher = await Teacher.findById(req.params.id);
@@ -241,28 +233,20 @@ export const setTeacherStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Teacher not found" });
     }
 
-    await teacher.update({
-      status,
-      rejectionReason: status === "rejected" ? rejectionReason.trim() : null,
-    });
-
+    await teacher.update({ status });
     await createNotification({
       userId: teacher.id,
-      title:
-        status === "approved"
-          ? "Teacher Profile Approved"
-          : status === "rejected"
-            ? "Teacher Profile Rejected"
-            : "Teacher Profile Pending",
+      userRole: "teacher",
+      title: status === "approved" ? "Teacher profile approved" : status === "rejected" ? "Teacher profile rejected" : "Teacher profile pending",
       message:
         status === "approved"
-          ? "Your teacher profile has been approved. You can now apply for jobs and chat with students."
+          ? "Your teacher profile has been approved and is now visible to students."
           : status === "rejected"
-            ? `Your teacher profile was rejected. Reason: ${rejectionReason.trim()}`
-            : "Your teacher profile has been moved back to pending review.",
-      type: "system",
-    });
-
+            ? "Your teacher profile was rejected by admin."
+            : "Your teacher profile status is pending admin review.",
+      type: "registration",
+      metadata: { status, targetId: teacher.id, targetRole: "teacher" },
+    }).catch(() => null);
     return res.status(200).json({
       success: true,
       message: `Teacher ${status}`,

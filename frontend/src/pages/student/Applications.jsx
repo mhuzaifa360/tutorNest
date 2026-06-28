@@ -5,6 +5,7 @@ import { FiCheck, FiMessageSquare, FiStar, FiUser, FiX } from "react-icons/fi";
 import { studentApi } from "../../services/apiService";
 import PageContainer from "../../components/layout/PageContainer";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const initials = (teacher) =>
   `${teacher?.firstName?.[0] || ""}${teacher?.lastName?.[0] || ""}`.toUpperCase() || "T";
@@ -65,14 +66,15 @@ function Applications() {
         <div className="grid gap-4 lg:grid-cols-2">
           {applications.map((app) => {
             const teacher = app.tutor || {};
+            const teacherImage = getImageUrl(teacher.profileImage);
             const accepted = app.status === "accepted";
             const pending = app.status === "pending";
             return (
               <Card key={app.id} className="space-y-4">
                 <div className="flex items-start gap-4">
-                  {teacher.profileImage ? (
+                  {teacherImage ? (
                     <img
-                      src={teacher.profileImage}
+                      src={teacherImage}
                       alt={`${teacher.firstName || "Teacher"} profile`}
                       className="h-14 w-14 rounded-full object-cover"
                     />

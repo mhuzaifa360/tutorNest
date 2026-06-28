@@ -1,20 +1,11 @@
 import multer from "multer";
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
-const documentFields = [
-  "cnicFront",
-  "cnicBack",
-  "degree",
-  "certificate",
-  "degreeCertificate",
-  "experienceCertificate",
-];
 
 const ensureDir = (dir) => {
   fs.mkdirSync(dir, { recursive: true });
-  return dir;
 };
 
 // STORAGE CONFIG
@@ -22,32 +13,52 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Route by fieldname when available
     const field = file.fieldname;
-    if (field === "profileImage") return cb(null, ensureDir(`${uploadDir}/profile`));
-    if (documentFields.includes(field)) return cb(null, ensureDir(`${uploadDir}/documents`));
+    if (field === "profileImage") {
+      const dir = `${uploadDir}/profile`;
+      ensureDir(dir);
+      return cb(null, dir);
+    }
+    if (["cnicFront", "cnicBack", "degree", "certificate"].includes(field)) {
+      const dir = `${uploadDir}/documents`;
+      ensureDir(dir);
+      return cb(null, dir);
+    }
 
     // Fallbacks
     const category = req.uploadCategory;
     if (category === "profile") {
-      return cb(null, ensureDir(`${uploadDir}/profile`));
+      const dir = `${uploadDir}/profile`;
+      ensureDir(dir);
+      return cb(null, dir);
     }
 
     if (category === "document") {
-      return cb(null, ensureDir(`${uploadDir}/documents`));
+      const dir = `${uploadDir}/documents`;
+      ensureDir(dir);
+      return cb(null, dir);
     }
 
     if (req.user?.role === "student") {
-      return cb(null, ensureDir(`${uploadDir}/students`));
+      const dir = `${uploadDir}/students`;
+      ensureDir(dir);
+      return cb(null, dir);
     }
 
     if (req.user?.role === "teacher") {
-      return cb(null, ensureDir(`${uploadDir}/tutors`));
+      const dir = `${uploadDir}/tutors`;
+      ensureDir(dir);
+      return cb(null, dir);
     }
 
     if (req.baseUrl && req.baseUrl.includes("student")) {
-      return cb(null, ensureDir(`${uploadDir}/students`));
+      const dir = `${uploadDir}/students`;
+      ensureDir(dir);
+      return cb(null, dir);
     }
 
-    return cb(null, ensureDir(`${uploadDir}/tutors`));
+    const dir = `${uploadDir}/tutors`;
+    ensureDir(dir);
+    return cb(null, dir);
   },
 
   filename: (req, file, cb) => {
@@ -63,15 +74,23 @@ const storage = multer.diskStorage({
 
 // FILE FILTER
 const fileFilter = (req, file, cb) => {
+  const docFields = ["cnicFront", "cnicBack", "degree", "certificate"];
   const ext = path.extname(file.originalname).toLowerCase();
   const mime = file.mimetype;
+  const isDocumentUpload = req.uploadCategory === "document" || docFields.includes(file.fieldname);
 
   // Allow images for profile and images/pdf for documents
-  if (documentFields.includes(file.fieldname)) {
-    if ([".jpg", ".jpeg", ".png", ".pdf"].includes(ext) && (mime.startsWith("image/") || mime === "application/pdf")) {
+  if (isDocumentUpload) {
+    const allowedDocExts = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx"];
+    const allowedDocMimes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowedDocExts.includes(ext) && (mime.startsWith("image/") || allowedDocMimes.includes(mime))) {
       return cb(null, true);
     }
-    return cb(new Error("Only jpg, jpeg, png and pdf files are allowed for documents"));
+    return cb(new Error("Only jpg, jpeg, png, pdf, doc and docx files are allowed for documents"));
   }
 
   // Default: accept common image types
@@ -95,15 +114,10 @@ export const handleUpload = (middleware) => (req, res, next) => {
   middleware(req, res, (error) => {
     if (!error) return next();
 
-    const message =
-      error instanceof multer.MulterError
-        ? error.message
-        : error.message || "Invalid file";
-
     return res.status(400).json({
       success: false,
-      message,
-      errors: [message],
+      message: error.message || "File upload failed",
+      errors: [error.message || "File upload failed"],
     });
   });
 };

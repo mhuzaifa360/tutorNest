@@ -1,4 +1,5 @@
 import { Teacher, Review } from "../models/index.js";
+import { approvedTeacherWhere, publicTeacherAttributes, sanitizeTeacher } from "./publicTeacher.js";
 
 // This file contains the logic to calculate a teacher's score based on various factors like ratings, experience, profile completeness, etc. It can be used in the search controller to rank teachers when fetching them for search results or listings.
 export const calculateTeacherScore = (teacher, ratingData) => {
@@ -34,7 +35,10 @@ export const calculateTeacherScore = (teacher, ratingData) => {
 // This function can be used in the controller to rank teachers based on their score
 export const rankedTeachers = async (req, res) => {
   try {
-    const teachers = await Teacher.findAll();
+    const teachers = await Teacher.findAll({
+      where: approvedTeacherWhere(),
+      attributes: publicTeacherAttributes,
+    });
 
     const ranked = await Promise.all(
       teachers.map(async (t) => {
@@ -55,7 +59,7 @@ export const rankedTeachers = async (req, res) => {
         });
 
         return {
-          ...t.toJSON(),
+          ...sanitizeTeacher(t),
           rating: avgRating.toFixed(1),
           totalReviews,
           score,

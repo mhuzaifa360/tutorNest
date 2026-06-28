@@ -9,6 +9,7 @@ import Teachers from "../pages/Teachers";
 import Courses from "../pages/Courses";
 import Jobs from "../pages/Jobs";
 import Profile from "../pages/Profile";
+import EditProfile from "../pages/EditProfile";
 import Settings from "../pages/Settings";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -18,6 +19,7 @@ import { LegacyStudentRedirect, LegacyTeacherRedirect, LegacyDashboardRedirect }
 
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import TeacherJobDetails from "../pages/teacher/TeacherJobDetails";
+import MyStudents from "../pages/teacher/MyStudents";
 import FindTutors from "../pages/student/FindTutors";
 import TeacherProfile from "../pages/student/TeacherProfile";
 import SavedTutors from "../pages/student/SavedTutors";
@@ -61,6 +63,7 @@ function AppRoutes() {
           <Route path="/student" element={<DashboardHome />} />
           <Route path="/student/messages" element={<Messages />} />
           <Route path="/student/profile" element={<Profile />} />
+          <Route path="/student/profile/edit" element={<EditProfile />} />
           <Route path="/student/settings" element={<Settings />} />
           <Route path="/student/tutors" element={<FindTutors />} />
           <Route path="/student/tutors/:id" element={<TeacherProfile />} />
@@ -79,8 +82,9 @@ function AppRoutes() {
           <Route path="/teacher/jobs/:id" element={<TeacherJobDetails />} />
           <Route path="/teacher/messages" element={<Messages />} />
           <Route path="/teacher/profile" element={<Profile />} />
+          <Route path="/teacher/profile/edit" element={<EditProfile />} />
           <Route path="/teacher/settings" element={<Settings />} />
-          <Route path="/teacher/students" element={<TeacherDashboard />} />
+          <Route path="/teacher/students" element={<MyStudents />} />
           <Route path="/teacher/courses" element={<StudentCourses />} />
           <Route path="/teacher/earnings" element={<TeacherDashboard />} />
         </Route>
@@ -98,6 +102,7 @@ function AppRoutes() {
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/profile" element={<Profile />} />
+          <Route path="/admin/profile/edit" element={<EditProfile />} />
         </Route>
 
         {/* LEGACY ROUTES */}

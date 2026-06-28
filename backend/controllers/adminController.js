@@ -234,14 +234,15 @@ export const approveTeacher = async (req, res) => {
       });
     }
 
-    await teacher.update({ status: "approved", rejectionReason: null });
-
+    await teacher.update({ status: "approved" });
     await createNotification({
       userId: teacher.id,
-      title: "Teacher Profile Approved",
-      message: "Your teacher profile has been approved. You can now apply for jobs and chat with students.",
-      type: "system",
-    });
+      userRole: "teacher",
+      title: "Teacher profile approved",
+      message: "Your teacher profile has been approved and is now visible to students.",
+      type: "registration",
+      metadata: { status: "approved", targetId: teacher.id, targetRole: "teacher" },
+    }).catch(() => null);
 
     return res.status(200).json({
       success: true,
@@ -267,23 +268,15 @@ export const rejectTeacher = async (req, res) => {
       });
     }
 
-    const rejectionReason = String(req.body?.rejectionReason || req.body?.reason || "").trim();
-    if (!rejectionReason) {
-      return res.status(400).json({
-        success: false,
-        message: "Rejection reason is required",
-        errors: ["Rejection reason is required"],
-      });
-    }
-
-    await teacher.update({ status: "rejected", rejectionReason });
-
+    await teacher.update({ status: "rejected" });
     await createNotification({
       userId: teacher.id,
-      title: "Teacher Profile Rejected",
-      message: `Your teacher profile was rejected. Reason: ${rejectionReason}`,
-      type: "system",
-    });
+      userRole: "teacher",
+      title: "Teacher profile rejected",
+      message: "Your teacher profile was rejected by admin.",
+      type: "registration",
+      metadata: { status: "rejected", targetId: teacher.id, targetRole: "teacher" },
+    }).catch(() => null);
 
     return res.status(200).json({
       success: true,

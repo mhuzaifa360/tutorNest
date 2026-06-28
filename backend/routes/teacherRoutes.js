@@ -7,10 +7,9 @@ import {
   deleteTeachers,
 } from "../controllers/teacherController.js";
 // import token and authentication
-import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
+import { verifyToken, authorizeRoles, optionalAuth } from "../middleware/authMiddleware.js";
 import { rankedTeachers } from "../utils/rankTeacher.js";
 import { browseTeachers, getTeacherDetail } from "../controllers/studentModuleController.js";
-import upload, { handleUpload } from "../utils/multer.js";
 // define routes
 const router = express.Router();
 
@@ -29,21 +28,7 @@ router.post("/createTeacher", createTeacher);
 router.get("/getTeacherRating/:id", getSingleTeacher);  
 
 // UPDATE TEACHER | Role: teacher
-router.put(
-  "/updateTeacher/:id",
-  verifyToken,
-  authorizeRoles("teacher"),
-  handleUpload(upload.fields([
-    { name: "profileImage", maxCount: 1 },
-    { name: "cnicFront", maxCount: 1 },
-    { name: "cnicBack", maxCount: 1 },
-    { name: "degree", maxCount: 1 },
-    { name: "certificate", maxCount: 1 },
-    { name: "degreeCertificate", maxCount: 1 },
-    { name: "experienceCertificate", maxCount: 1 },
-  ])),
-  updateTeacher,
-); 
+router.put("/updateTeacher/:id", verifyToken, authorizeRoles("teacher"), updateTeacher, ); 
 
 // DELETE TEACHER | Role: teacher, admin
 router.delete("/deleteTeacher/:id",verifyToken,authorizeRoles("teacher","admin"), deleteTeachers,);
@@ -52,5 +37,5 @@ router.delete("/deleteTeacher/:id",verifyToken,authorizeRoles("teacher","admin")
 router.get("/ranked", rankedTeachers);
 
 // CANONICAL TEACHER DETAIL ROUTE | Role: authenticated users
-router.get("/:id", verifyToken, getTeacherDetail);
+router.get("/:id", optionalAuth, getTeacherDetail);
 export default router;

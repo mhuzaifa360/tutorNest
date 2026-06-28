@@ -1,30 +1,8 @@
 import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken";
 import { Student } from '../models/index.js';
-
-const badRequest = (res, message, errors = [message]) =>
-  res.status(400).json({ success: false, message, errors });
-
-const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
-
-const parseList = (value) => {
-  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed.map((item) => String(item).trim()).filter(Boolean)
-      : [String(parsed).trim()].filter(Boolean);
-  } catch {
-    return String(value)
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-};
-
-const uploadPath = (file, folder = "profile") =>
-  file ? `/uploads/${folder}/${file.filename}` : null;
+import Admin from "../models/adminModel.js";
+import { createNotification } from "./notificationController.js";
 
 // =========================
 // SIGNUP CONTROLLER
@@ -44,55 +22,89 @@ export const signupStudent = async (req, res) => {
       subjects,
     } = req.body;
 
-    const errors = [];
-    if (!firstName?.trim()) errors.push("First name is required");
-    if (!lastName?.trim()) errors.push("Last name is required");
-    if (!email?.trim()) errors.push("Email is required");
-    if (!password || password.length < 6) errors.push("Password must be at least 6 characters");
-    if (!mobile?.trim()) errors.push("Mobile is required");
-    if (!gender) errors.push("Gender is required");
-    if (!province?.trim()) errors.push("Province is required");
-    if (!city?.trim()) errors.push("City is required");
-    if (!classLevel) errors.push("Class level is required");
-    if (!req.file) errors.push("Profile image required");
-
-    const parsedSubjects = parseList(subjects);
-    if (!parsedSubjects.length) errors.push("Invalid subjects");
-
-    if (errors.length) {
-      return badRequest(res, errors[0], errors);
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password || !mobile || !province || !city || !classLevel || !gender || !subjects) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required for student signup",
+      });
     }
 
-    const profileImage = uploadPath(req.file);
-    const normalizedEmail = normalizeEmail(email);
+    const profileImage = req.file ? req.file.filename : null;
 
     const existingStudent = await Student.findOne({
-      where: { email: normalizedEmail },
+      where: { email: email.trim().toLowerCase() },
     });
 
     if (existingStudent) {
-      return res.status(409).json({
+      return res.status(400).json({
         success: false,
-        message: "Email already exists",
-        errors: ["Email already exists"],
+        message: "Student already exists",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Parse subjects if it's a string
+    let parsedSubjects = subjects;
+    if (typeof subjects === "string") {
+      try {
+        parsedSubjects = JSON.parse(subjects);
+      } catch {
+        parsedSubjects = subjects.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    // Parse classLevel if it's a string
+    let parsedClassLevel = classLevel;
+    if (typeof classLevel === "string") {
+      try {
+        parsedClassLevel = JSON.parse(classLevel);
+      } catch {
+        parsedClassLevel = classLevel;
+      }
+    }
+
     const newStudent = await Student.create({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      email: normalizedEmail,
+      email: email.trim().toLowerCase(),
       password: hashedPassword,
-      mobile: mobile.trim(),
-      province: province.trim(),
-      city: city.trim(),
+      mobile,
+      province,
+      city,
       gender,
       subjects: parsedSubjects,
-      classLevel,
-      otherSubject: req.body.otherSubject || null,
+      classLevel: parsedClassLevel,
       profileImage,
+    });
+
+    const admins = await Admin.findAll({ attributes: ["id"] });
+    const notifications = await Promise.all(
+      admins.map((admin) =>
+        createNotification({
+          userId: admin.id,
+          userRole: "admin",
+          title: "New Student Registration",
+          message: `${newStudent.firstName} ${newStudent.lastName} registered as a student.`,
+          type: "registration",
+          metadata: {
+            profileImage,
+            name: `${newStudent.firstName} ${newStudent.lastName}`,
+            role: "student",
+            registeredAt: newStudent.createdAt,
+            targetId: newStudent.id,
+            targetRole: "student",
+            actions: ["view"],
+          },
+        }).catch(() => null)
+      )
+    );
+    notifications.filter(Boolean).forEach((notification) => {
+      req.app?.get("io")?.to(`user_admin_${notification.userId}`).emit(
+        "notification_created",
+        notification.toJSON()
+      );
     });
 
     const token = jwt.sign(
@@ -124,27 +136,10 @@ export const signupStudent = async (req, res) => {
     });
   } catch (error) {
     console.error("Student Signup Error:", error.message);
-    if (error.name === "SequelizeUniqueConstraintError") {
-      return res.status(409).json({
-        success: false,
-        message: "Email already exists",
-        errors: ["Email already exists"],
-      });
-    }
-
-    if (error.name === "SequelizeValidationError") {
-      const errors = error.errors?.map((item) => item.message) || [error.message];
-      return res.status(400).json({
-        success: false,
-        message: errors[0],
-        errors,
-      });
-    }
-
     return res.status(500).json({
       success: false,
       message: error.errors ? error.errors[0].message : "Signup failed",
-      errors: [error.message],
+      error: error.message,
     });
   }
 };

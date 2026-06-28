@@ -1,23 +1,32 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiBookmark, FiSearch, FiStar } from "react-icons/fi";
 import { studentApi } from "../../services/apiService";
 import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from "../../components/student/StudentStates";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const input = "h-11 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-white";
 
 function FindTutors() {
   const [filters, setFilters] = useState({ search: "", subject: "", city: "", province: "", teachingMode: "", minFee: "", maxFee: "", minExperience: "", minRating: "" });
   const [teachers, setTeachers] = useState([]);
+  const [savedIds, setSavedIds] = useState(new Set());
   const [savingId, setSavingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const load = async () => {
     setLoading(true);
-    const res = await studentApi.findTeachers(filters);
+    const [res, savedRes] = await Promise.all([
+      studentApi.findTeachers(filters),
+      studentApi.savedTeachers(),
+    ]);
     if (res.ok) {
       setTeachers(res.data || []);
+      if (savedRes.ok) {
+        setSavedIds(new Set((savedRes.data || []).map((teacher) => Number(teacher.id))));
+      }
       setError("");
     } else setError(res.message || "Unable to load tutors.");
     setLoading(false);
@@ -29,11 +38,21 @@ function FindTutors() {
 
   const update = (event) => setFilters((prev) => ({ ...prev, [event.target.name]: event.target.value }));
 
-  const saveTeacher = async (teacherId) => {
+  const toggleSaveTeacher = async (teacherId) => {
+    const numericId = Number(teacherId);
     setSavingId(teacherId);
-    const res = await studentApi.saveTeacher(teacherId);
+    const alreadySaved = savedIds.has(numericId);
+    const nextSaved = new Set(savedIds);
+    if (alreadySaved) nextSaved.delete(numericId);
+    else nextSaved.add(numericId);
+    setSavedIds(nextSaved);
+
+    const res = alreadySaved
+      ? await studentApi.removeSavedTeacher(teacherId)
+      : await studentApi.saveTeacher(teacherId);
     setSavingId(null);
     if (!res.ok) {
+      setSavedIds(savedIds);
       setError(res.message || "Unable to save teacher.");
     }
   };
@@ -70,7 +89,17 @@ function FindTutors() {
             <Card key={teacher.id}>
               <div className="flex items-start gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 font-bold text-white">
-                  {teacher.firstName?.[0]}{teacher.lastName?.[0]}
+                  {getImageUrl(teacher.profileImage) ? (
+                    <img
+                      src={getImageUrl(teacher.profileImage)}
+                      alt={`${teacher.firstName} ${teacher.lastName}`}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <>
+                      {teacher.firstName?.[0]}{teacher.lastName?.[0]}
+                    </>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-bold text-gray-950 dark:text-white">{teacher.firstName} {teacher.lastName}</h3>
@@ -88,11 +117,16 @@ function FindTutors() {
                 <Link to={`/student/tutors/${teacher.id}`} className="flex-1 rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white">View Profile</Link>
                 <button
                   type="button"
-                  onClick={() => saveTeacher(teacher.id)}
+                  onClick={() => toggleSaveTeacher(teacher.id)}
                   disabled={savingId === teacher.id}
-                  className="inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700"
+                  className={`inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                    savedIds.has(Number(teacher.id))
+                      ? "border-red-200 bg-red-50 text-red-600 dark:border-red-900/50 dark:bg-red-950/30"
+                      : "dark:border-slate-700"
+                  }`}
+                  aria-label={savedIds.has(Number(teacher.id)) ? "Remove saved teacher" : "Save teacher"}
                 >
-                  <FiBookmark />
+                  <FiBookmark className={savedIds.has(Number(teacher.id)) ? "fill-current" : ""} />
                 </button>
               </div>
             </Card>

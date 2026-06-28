@@ -13,6 +13,8 @@ import { EmailToken } from "./emailTokenModel.js";
 import { FileRecord } from "./fileModel.js";
 import { VerificationRequest } from "./verificationRequestModel.js";
 import { Transaction } from "./transactionModel.js";
+import { HireRequest } from "./hireRequestModel.js";
+import { Meeting } from "./meetingModel.js";
 import { Conversation } from "./Conversation.js";
 import { ChatMessage } from "./Message.js";
 
@@ -40,6 +42,26 @@ Course.belongsToMany(Student, {
   foreignKey: "courseId",
   otherKey: "studentId",
   as: "students",
+});
+
+Enrollment.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+Enrollment.belongsTo(Course, {
+  foreignKey: "courseId",
+  as: "course",
+});
+
+Student.hasMany(Enrollment, {
+  foreignKey: "studentId",
+  as: "enrollments",
+});
+
+Course.hasMany(Enrollment, {
+  foreignKey: "courseId",
+  as: "enrollments",
 });
 
 // STUDENT <-> JOB
@@ -160,6 +182,46 @@ SavedTeacher.belongsTo(Teacher, {
   as: "teacher",
 });
 
+Student.hasMany(HireRequest, {
+  foreignKey: "studentId",
+  as: "hireRequests",
+});
+
+Teacher.hasMany(HireRequest, {
+  foreignKey: "teacherId",
+  as: "hireRequests",
+});
+
+HireRequest.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+HireRequest.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
+Student.hasMany(Meeting, {
+  foreignKey: "studentId",
+  as: "meetings",
+});
+
+Teacher.hasMany(Meeting, {
+  foreignKey: "teacherId",
+  as: "meetings",
+});
+
+Meeting.belongsTo(Student, {
+  foreignKey: "studentId",
+  as: "student",
+});
+
+Meeting.belongsTo(Teacher, {
+  foreignKey: "teacherId",
+  as: "teacher",
+});
+
 // USER NOTIFICATIONS
 Student.hasMany(Notification, {
   foreignKey: "userId",
@@ -261,4 +323,6 @@ export {
   FileRecord,
   VerificationRequest,
   Transaction,
+  HireRequest,
+  Meeting,
 };

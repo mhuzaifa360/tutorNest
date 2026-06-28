@@ -1,4 +1,5 @@
 import { Teacher, Review, Job, Course } from "../models/index.js";
+import { approvedTeacherWhere, publicTeacherAttributes, sanitizeTeacher } from "../utils/publicTeacher.js";
 
 // SEARCH & FILTER TEACHERS
 export const searchTeachers = async (req, res) => {
@@ -20,7 +21,7 @@ export const searchTeachers = async (req, res) => {
     const offset = (page - 1) * limit;
 
     // WHERE CONDITIONS
-    let whereCondition = {};
+    let whereCondition = approvedTeacherWhere();
 
     if (name) {
       whereCondition.firstName = {
@@ -59,6 +60,7 @@ export const searchTeachers = async (req, res) => {
     // FETCH TEACHERS
     const teachers = await Teacher.findAll({
       where: whereCondition,
+      attributes: publicTeacherAttributes,
       limit: Number(limit),
       offset: Number(offset),
       order,
@@ -82,7 +84,7 @@ export const searchTeachers = async (req, res) => {
         if (minRating && avgRating < minRating) return null;
 
         return {
-          ...teacher.toJSON(),
+          ...sanitizeTeacher(teacher),
           rating: {
             average: Number(avgRating.toFixed(1)),
             totalReviews,
@@ -191,6 +193,13 @@ export const searchCourses = async (req, res) => {
 
     const courses = await Course.findAll({
       where,
+      include: {
+        model: Teacher,
+        as: "teacher",
+        where: approvedTeacherWhere(),
+        attributes: publicTeacherAttributes,
+        required: true,
+      },
       limit: Number(limit),
       offset: Number(offset),
     });

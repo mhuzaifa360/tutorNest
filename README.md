@@ -1,451 +1,201 @@
-# TutorNest – Learning & Teaching Marketplace Platform
+# TutorNest
 
-## 📖 Overview
+TutorNest is a role-based tutor finder and learning marketplace built with React, Tailwind CSS, Node.js, Express, MySQL, Sequelize, Socket.io, and JWT authentication.
 
-TutorNest is a Learning & Teaching Marketplace Platform where students can find teachers, enroll in courses, post tuition jobs, and communicate directly with teachers. Teachers can create profiles, offer courses, apply for jobs, and manage their students. Admins manage the entire platform.
+## Features
 
----
+- Student, teacher, and admin authentication with JWT.
+- Admin approval workflow for teachers. Pending and rejected teachers are hidden from public listings, Tutor Finder, search, saved teachers, recommendations, courses, applications, and home-page tutor sections.
+- Admin registration notifications for new teachers and students, with profile image, name, role, registration time, and admin quick actions for teacher approve/reject/view.
+- Private teacher verification documents. Profile images are public; CNIC, degree, certificate, resume, and verification files are available only through authenticated owner/admin download routes.
+- Tutor Finder, public teacher listings, home featured tutors, saved teachers, and teacher profile pages show approved teachers only.
+- Teacher profile actions for students: Save, Message, and Hire Me.
+- Saved Teachers dashboard with save/remove, profile, and message actions.
+- Review system with rating, comment, student name, student profile picture, teacher, and date. Latest reviews appear first on the home page.
+- Course enrollment with duplicate prevention and notifications.
+- Dashboard navigation in the top navbar for student, teacher, and admin layouts on desktop and mobile.
+- Notifications with unread badges, mark-read actions, delete actions, polling fallback, and Socket.io push for newly created notifications.
+- Messaging between students, teachers, and admins, with Socket.io direct-message delivery, typing hooks, presence snapshots, and unread counts.
+- Voice/video call signaling hooks over Socket.io: incoming call, accept, reject, end, and WebRTC signal relay.
+- Meeting scheduling API between students and teachers, including accept, reject, and reschedule notifications.
+- Admin management screens for users, students, teachers, courses, jobs, applications, reviews, reports, and settings.
 
-# 🚀 Features
+## User Roles
 
-## 👤 Guest
+- Student: find approved tutors, save teachers, message teachers, hire teachers, enroll in courses, post jobs, review teachers, and schedule meetings.
+- Teacher: manage profile and courses, apply to jobs after approval, message students, receive hire requests, respond to meeting requests, and view students.
+- Admin: approve/reject teachers, manage users/content, view private verification documents, moderate reviews/applications, and receive registration notifications.
 
-- Browse Teachers
-- Browse Courses
-- Browse Jobs
-- View Teacher Profiles
-- Register / Login
+## Admin Verification Workflow
 
----
+Teacher verification is enforced on the backend, not only in the frontend UI.
 
-## 🎓 Student
+1. A newly registered teacher is saved with `status: "pending"`.
+2. Pending and rejected teachers are excluded from public/student teacher reads, including Tutor Finder, Teachers Page search results, ranked/home tutors, saved teachers, public profile, courses, enrollments, applications, jobs, chat conversation participants, and student dashboard snippets.
+3. Admins can still see pending, approved, and rejected teachers in admin management.
+4. Admin approval uses `PUT /v1/admin/teachers/:id/status` with `{ "status": "approved" }`.
+5. Admin rejection uses the same endpoint with `{ "status": "rejected" }`.
+6. Only `approved` teachers become visible across the student/public app.
 
-- Register / Login
-- Search Teachers
-- Save Favorite Teachers
-- Enroll in Courses
-- Post Tuition Jobs
-- Manage Posted Jobs
-- View Applications
-- Chat with Teachers
-- Leave Reviews & Ratings
-- Manage Profile
+Students do not currently have a verification status field in the TutorNest schema, so student verification is not enabled. If student verification is added later, the same pattern should be applied with a student status column and approved-only filters on student-facing reads.
 
----
+## Key APIs
 
-## 👨‍🏫 Teacher
-
-- Register / Login
-- Create Professional Profile
-- Upload Documents & Certificates
-- Verification Request
-- Create & Manage Courses
-- Browse Jobs
-- Apply for Jobs
-- Manage Students
-- Chat with Students
-- View Earnings
-- Manage Reviews
-
----
-
-## 👨‍💼 Admin
-
-- Dashboard Analytics
-- User Management
-- Teacher Verification
-- Course Management
-- Job Management
-- Application Management
-- Review Moderation
-- Reports & System Settings
-
----
-
-# 🏗 System Architecture
-
-## Frontend
-
-- React.js
-- Tailwind CSS
-- React Router
-- Axios
-- Context API
-
-### Public Pages
-
-- Home
-- Teachers
-- Teacher Details
-- Courses
-- Course Details
-- Jobs
-- Job Details
-- About
-- Contact
-- Login
-- Signup
-
-### Student Dashboard
-
-- Dashboard
-- My Courses
-- Saved Teachers
-- Saved Courses
-- My Jobs
-- Applications
-- Messages
-- Reviews
-- Notifications
-- Settings
-
-### Teacher Dashboard
-
-- Dashboard
-- Profile
-- Verification
-- Courses
-- Students
-- Job Applications
-- Earnings
-- Messages
-- Reviews
-- Notifications
-- Settings
-
-### Admin Dashboard
-
-- Dashboard
-- Users
-- Teachers
-- Courses
-- Jobs
-- Applications
-- Reviews
-- Reports
-- Notifications
-- Settings
-
----
-
-# ⚙ Backend
-
-## Authentication Module
-
-Features:
-
-- Register
-- Login
-- Logout
-- JWT Authentication
-- Refresh Token
-- Forgot Password
-- Reset Password
-- Email Verification
-- Role Authorization
-
-API Endpoints:
+### Authentication
 
 ```http
 POST /v1/auth/student/signup
 POST /v1/auth/student/login
 POST /v1/auth/teacher/signup
 POST /v1/auth/teacher/login
+POST /v1/auth/login
 ```
 
----
-
-## Teacher Module
-
-Features:
-
-- Teacher CRUD
-- Profile Management
-- Verification System
-- Education & Experience
-- Skills & Subjects
-- Availability
-- Documents Upload
-
-Endpoints:
+### Teacher Approval And Discovery
 
 ```http
-GET    /v1/teachers/getTeachers
-GET    /v1/teachers/getTeacherRating/:id
-POST   /v1/teachers/createTeacher
-PUT    /v1/teachers/updateTeacher/:id
-DELETE /v1/teachers/deleteTeacher/:id
-get /v1/teachers/ranked
+GET    /v1/teachers
+GET    /v1/teachers/:id
+GET    /v1/teachers/ranked
+GET    /v1/search/teachers
+GET    /v1/recommend
+PUT    /v1/admin/teachers/:id/status
 ```
 
----
-
-## Course Module
-
-Features:
-
-- Course CRUD
-- Categories
-- Enrollments
-- Progress Tracking
-- Reviews
-
-Endpoints:
+### Profiles And Documents
 
 ```http
-GET    /v1/courses/getCourses
-GET    /v1/courses/getSingleCourse/:id
-POST   /v1/courses/createCourse
-PUT    /v1/courses/updateCourse/:id
-DELETE /v1/courses/deleteCourse/:id
+GET    /v1/profile/me
+PUT    /v1/profile/update
+PUT    /v1/profile/change-password
+DELETE /v1/profile/delete-account
+
+GET    /v1/upload/files
+GET    /v1/upload/files/:id/download
+POST   /v1/upload/profile-image
+POST   /v1/upload/document
+DELETE /v1/upload/delete/:id
 ```
 
----
-
-## Job Module
-
-Features:
-
-- Create Jobs
-- Browse Jobs
-- Manage Jobs
-- Featured Jobs
-
-Endpoints:
+### Saved Teachers, Hire Requests, Reviews
 
 ```http
-GET    /v1/jobs/getJobs
-GET    /v1/jobs/getSingleJob/:id
-POST   /v1/jobs/createJob
-PUT    /v1/jobs/updateJob/:id
-DELETE /v1/jobs/deleteJob/:id
-```
+GET    /v1/student/saved-teachers
+POST   /v1/student/saved-teachers
+DELETE /v1/student/saved-teachers/:teacherId
 
----
+POST   /v1/hire-requests
 
-## Application Module
-
-Features:
-
-- Apply for Jobs
-- Manage Applications
-- Accept / Reject Applications
-- Application Status
-
-Endpoints:
-
-```http
-GET    /v1/applications/getApplications
-GET    /v1/applications/getSingleApplication
-POST   /v1/applications/apply
-PUT    /v1/applications/updateApplication/:id
-DELETE /v1/applications/deleteApplication/:id
-```
-
----
-
-## Review Module
-
-Features:
-
-- Teacher Reviews
-- Course Reviews
-- Ratings System
-
-Endpoints:
-
-```http
 GET    /v1/reviews/getReviews
-GET    /v1/reviews/getSingleReview/:id
 POST   /v1/reviews/createReview
 PUT    /v1/reviews/updateReview/:id
 DELETE /v1/reviews/deleteReview/:id
 ```
 
----
-## Notification Module
-
-Features:
-
-- Email Notifications
-- In-App Notifications
-- Job Alerts
-- Verification Updates
-
-Endpoints:
+### Chat, Calls, Meetings
 
 ```http
-GET  /v1/notifications/getNotifications
-put /v1/notifications/markAsRead/:id
-put /v1/notifications/deleteNotification/:id
+POST /v1/messages/send
+GET  /v1/messages/conversations/:userId
+GET  /v1/messages/:conversationId
+
+GET   /v1/meetings
+POST  /v1/meetings
+PATCH /v1/meetings/:id
 ```
 
----
+Socket.io events include `direct_message`, `notification_created`, `presence_snapshot`, `user_online`, `user_offline`, `typing_direct`, `stop_typing_direct`, `incoming_call`, `call_accept`, `call_reject`, `call_end`, and `webrtc_signal`.
 
-## Search & Recommendation Module
+### Notifications
 
-### Search Filters
+```http
+GET    /v1/notifications
+GET    /v1/notifications/unread-count
+PATCH  /v1/notifications/read
+PUT    /v1/notifications/markAsRead/:id
+PUT    /v1/notifications/markAllAsRead
+DELETE /v1/notifications/deleteNotification/:id
+```
 
-- Teacher
-- Jobs
-- course
+## Installation
 
-### Smart Ranking
+1. Install backend dependencies.
 
-- Featured Teachers
-- Highest Rated Teachers
-- Most Reviewed Teachers
-- Recommended Teachers
-- Trending Courses
-- Featured Jobs
+```bash
+cd backend
+npm install
+```
 
----
+2. Create `backend/.env`.
 
-# 🗄 Database Schema
+```env
+PORT=5000
+CORS_ORIGIN=http://localhost:5173
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=tutornest
+DB_USER=root
+DB_PASSWORD=
+DB_DIALECT=mysql
+DB_SYNC=false
+DB_LOGGING=false
+JWT_SECRET=change_me
+JWT_EXPIRES_IN=7d
+UPLOAD_DIR=uploads
+```
 
-## Core Tables
+3. Start the backend.
 
-```sql
-New
-admins
-applications
-courses
-enrollments
-jobs
-notifications
-reviews
-savedjobs
-students
-teacher
+```bash
+npm run dev
+```
 
----
+4. Install and start the frontend.
 
-# 🔐 Security
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- JWT Authentication
-- bcrypt Password Hashing
-- Role Based Access Control
-- Protected Routes
-- Refresh Tokens
-- Input Validation
-- API Security Middleware
-
----
-
-# 🔌 External Services
-
-Current:
-
-- Email Service
-
-Future:
-
-- Stripe
-- JazzCash
-- EasyPaisa
-- Google OAuth
-- Cloudinary
-- Socket.io
-
----
-
-# 💻 Tech Stack
-
-## Frontend
-
-- React.js
-- Tailwind CSS
-- React Router
-- Axios
-- Context API
-
-## Backend
-
-- Node.js
-- Express.js
-- Sequelize ORM
-- MySQL
-- JWT
-- bcrypt
-
----
-
-# 📂 Frontend Structure
+## Folder Structure
 
 ```txt
-src/
-├── assets/
-├── components/
-│   ├── common/
-│   ├── home/
-│   └── layout/
-│
-├── context/
-│   ├── AuthContext.jsx
-│   ├── ThemeContext.jsx
-│
-├── layouts/
-│   ├── StudentLayout.jsx
-│   ├── TeacherLayout.jsx
-│   └── AdminLayout.jsx
-│
-├── pages/
-│   └── admin/
-│       └── adminDashboard.jsx
-│   └── student/
-│       └── studentDashboard.jsx
-│   └── teacher/
-│       └── teacherDashboard.jsx
-│   ├── about.jsx
-│   ├── contact.jsx
-│   ├── courses.jsx
-│   ├── home.jsx
-│   ├── login.jsx
-│   ├── signup.jsx
-│   ├── teachers.jsx
-│
-├── routes/
-├── services/
-├── utils/
-└── App.jsx
+backend/
+  config/
+  controllers/
+  middleware/
+  models/
+  routes/
+  socket/
+  uploads/
+  utils/
+
+frontend/src/
+  components/
+  context/
+  layouts/
+  pages/
+    admin/
+    student/
+    teacher/
+  routes/
+  services/
+  utils/
 ```
 
----
+## Production Notes
 
-# 🎯 Current Development Status
+- Use a strong `JWT_SECRET` and restrict `CORS_ORIGIN` to the deployed frontend.
+- Store private documents outside a public static directory in production, or move uploads to private object storage.
+- Keep `DB_SYNC=false` outside local setup. Runtime schema guards add required compatibility columns/tables.
+- Add TURN/STUN credentials before enabling full browser-to-browser calling in production networks.
+- Add pagination for large teacher, course, review, notification, and message datasets.
 
-### Completed
+## Future Improvements
 
-- Authentication System
-- JWT Integration
-- Role-Based Architecture
-- Teacher CRUD
-- Theme System
-- Search & Filter Backend
-
-### In Progress
-
-- Protected Routes
-- Dashboard Layouts
-- Course CRUD
-- Job CRUD Frontend
-- Application Management
-
-### Planned
-
-- Real-Time Chat (Socket.io)
-- Notifications System
-- Recommendation Engine
-- Payment Integration
-- Video Session Integration
-
----
-
-## 👨‍💻 Developer
-
-**Muhammad Huzaifa**
-Portfolio:
-https://mhuzaifa-portfolio.vercel.app
-
-Project:
-TutorNest – Learning & Teaching Marketplace Platform
+- Full in-browser WebRTC call room UI with camera/mic/screen controls and call duration persistence.
+- Meeting reminder workers for scheduled notification delivery before start time.
+- Teacher hire request accept/reject dashboard.
+- Cloud storage and virus scanning for uploaded documents.
+- Code splitting for the frontend bundle.

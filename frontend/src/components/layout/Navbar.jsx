@@ -4,6 +4,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 
 import ThemeToggle from "../common/ThemeToggle";
 import UserMenu from "../common/UserMenu";
+import NotificationBell from "../common/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 
 const navItems = {
@@ -23,8 +24,8 @@ const navItems = {
   teacher: [
     { name: "Dashboard", path: "/teacher" },
     { name: "My Students", path: "/teacher/students" },
+    { name: "Messages", path: "/teacher/messages" },
     { name: "Courses", path: "/teacher/courses" },
-    { name: "Earnings", path: "/teacher/earnings" },
     { name: "Profile", path: "/teacher/profile" },
   ],
   admin: [
@@ -74,7 +75,10 @@ function Navbar() {
           <ThemeToggle />
 
           {user ? (
-            <UserMenu />
+            <>
+              <NotificationBell />
+              <UserMenu />
+            </>
           ) : (
             <div className="hidden items-center gap-3 md:flex">
               <Link

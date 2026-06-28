@@ -1,5 +1,6 @@
 import { Course } from "../models/index.js";
 import { Teacher } from "../models/index.js";
+import { approvedTeacherWhere, publicTeacherAttributes } from "../utils/publicTeacher.js";
 
 export const createCourse = async (req, res) => {
   try {
@@ -7,6 +8,13 @@ export const createCourse = async (req, res) => {
 
     // teacher comes from JWT middleware
     const teacherId = req.user.id;
+    const teacher = await Teacher.findOne({ where: approvedTeacherWhere({ id: teacherId }) });
+    if (!teacher) {
+      return res.status(403).json({
+        success: false,
+        message: "Only approved teachers can create courses",
+      });
+    }
 
     const course = await Course.create({
       title,
@@ -35,7 +43,9 @@ export const getCourses = async (req, res) => {
       include: {
         model: Teacher,
         as: "teacher",
-        attributes: ["id", "firstName", "lastName", "email"],
+        where: approvedTeacherWhere(),
+        attributes: publicTeacherAttributes,
+        required: true,
       },
     });
 
@@ -61,6 +71,9 @@ export const getSingleCourse = async (req, res) => {
       include: {
         model: Teacher,
         as: "teacher",
+        where: approvedTeacherWhere(),
+        attributes: publicTeacherAttributes,
+        required: true,
       },
     });
 

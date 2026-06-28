@@ -1,6 +1,7 @@
 import { sequelize } from "../config/database.js";
 import { Application, Conversation, Job, Review, Student, Teacher } from "../models/index.js";
 import { createNotification } from "./notificationController.js";
+import { approvedTeacherWhere } from "../utils/publicTeacher.js";
 
 const ok = (res, message, data = {}, status = 200) =>
   res.status(status).json({ success: true, message, data });
@@ -56,6 +57,8 @@ const applicationInclude = [
   {
     model: Teacher,
     as: "tutor",
+    where: approvedTeacherWhere(),
+    required: true,
     attributes: teacherAttributes,
   },
 ];
@@ -98,6 +101,8 @@ const findApplicationForOwner = async (id, studentId) => {
       {
         model: Teacher,
         as: "tutor",
+        where: approvedTeacherWhere(),
+        required: true,
         attributes: teacherAttributes,
       },
     ],
@@ -111,6 +116,9 @@ export const applyJob = async (req, res) => {
     }
 
     const tutorId = req.user.id;
+    const approvedTeacher = await Teacher.findOne({ where: approvedTeacherWhere({ id: tutorId }) });
+    if (!approvedTeacher) return fail(res, 403, "Your teacher profile must be approved before applying");
+
     const jobId = Number(req.body.jobId);
     const coverLetter = (req.body.coverLetter || req.body.message || "").trim();
     const expectedFee = req.body.expectedFee === undefined ? null : Number(req.body.expectedFee);
@@ -119,18 +127,6 @@ export const applyJob = async (req, res) => {
     if (!coverLetter) return fail(res, 400, "Cover letter is required");
     if (expectedFee !== null && (!Number.isFinite(expectedFee) || expectedFee <= 0)) {
       return fail(res, 400, "Expected fee must be a positive number");
-    }
-
-    const applyingTeacher = await Teacher.findById(tutorId);
-    if (!applyingTeacher) return fail(res, 404, "Teacher not found");
-    if (applyingTeacher.status !== "approved") {
-      return fail(
-        res,
-        403,
-        applyingTeacher.status === "rejected"
-          ? applyingTeacher.rejectionReason || "Teacher account was rejected. Please upload updated documents."
-          : "Teacher account is pending admin approval"
-      );
     }
 
     const job = await Job.findById(jobId, {
@@ -197,6 +193,8 @@ export const getStudentApplications = async (req, res) => {
         {
           model: Teacher,
           as: "tutor",
+          where: approvedTeacherWhere(),
+          required: true,
           attributes: teacherAttributes,
         },
       ],

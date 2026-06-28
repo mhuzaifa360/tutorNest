@@ -10,6 +10,11 @@ export const Notification = sequelize.define(
       allowNull: false,
     },
 
+    userRole: {
+      type: DataTypes.ENUM("student", "teacher", "admin"),
+      allowNull: true,
+    },
+
     title: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -25,9 +30,20 @@ export const Notification = sequelize.define(
         "application",
         "job",
         "review",
+        "message",
+        "registration",
+        "hire",
+        "enrollment",
+        "meeting",
+        "call",
         "system"
       ),
       defaultValue: "system",
+    },
+
+    metadata: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
 
     isRead: {

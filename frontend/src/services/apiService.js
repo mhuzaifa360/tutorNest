@@ -40,6 +40,7 @@ export const authApi = {
 
 export const profileApi = {
   me: () => apiRequest("/profile/me"),
+  files: () => apiRequest("/upload/files"),
 
   update: (body) =>
     apiRequest("/profile/update", {
@@ -57,6 +58,10 @@ export const profileApi = {
     apiRequest("/profile/delete-account", {
       method: "DELETE",
     }),
+
+  uploadProfileImage: (formData) => apiMultipartRequest("/upload/profile-image", formData),
+  uploadDocument: (formData) => apiMultipartRequest("/upload/document", formData),
+  deleteFile: (id) => apiRequest(`/upload/delete/${id}`, { method: "DELETE" }),
 };
 
 // ==================
@@ -151,6 +156,11 @@ export const studentApi = {
       body: JSON.stringify({ courseId }),
     }),
   enrolledCourses: () => apiRequest("/enrollments/my-courses"),
+  hireTeacher: (teacherId, message) =>
+    apiRequest("/hire-requests", {
+      method: "POST",
+      body: JSON.stringify({ teacherId, message }),
+    }),
 
   jobs: () => apiRequest("/student/jobs"),
   createJob: (body) =>
@@ -186,7 +196,7 @@ export const studentApi = {
   deleteNotification: (id) =>
     apiRequest(`/notifications/deleteNotification/${id}`, { method: "DELETE" }),
 
-  reviews: () => apiRequest("/reviews/getReviews"),
+  reviews: (params = {}) => apiRequestWithParams("/reviews/getReviews", params),
   createReview: (body) =>
     apiRequest("/reviews/createReview", {
       method: "POST",
@@ -209,8 +219,8 @@ export const searchApi = {
 // ==================
 
 export const notificationApi = {
-  getAll: () => apiRequest("/notifications/getNotifications"),
-  getUnreadCount: (userId) => apiRequest(`/notifications/unread/${userId}`),
+  getAll: () => apiRequest("/notifications"),
+  getUnreadCount: () => apiRequest("/notifications/unread-count"),
   markAsRead: (id) => apiRequest(`/notifications/markAsRead/${id}`, { method: "PUT" }),
   markAllAsRead: () => apiRequest("/notifications/markAllAsRead", { method: "PUT" }),
   delete: (id) =>
@@ -229,6 +239,24 @@ export const messagesApi = {
     }),
   conversations: (userId) => apiRequest(`/messages/conversations/${userId}`),
   getConversation: (conversationId) => apiRequest(`/messages/${conversationId}`),
+};
+
+// ==================
+// MEETING API
+// ==================
+
+export const meetingApi = {
+  list: () => apiRequest("/meetings"),
+  schedule: (body) =>
+    apiRequest("/meetings", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  update: (id, body) =>
+    apiRequest(`/meetings/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 };
 
 // ==================

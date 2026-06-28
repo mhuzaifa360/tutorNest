@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FiLogOut } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 import HomeButton from "./HomeButton";
 import { getImageUrl } from "../../utils/getImageUrl";
@@ -10,6 +9,7 @@ const getRolePaths = (role) => {
   if (normalized === "teacher") {
     return {
       profile: "/teacher/profile",
+      editProfile: "/teacher/profile/edit",
       dashboard: "/teacher",
       settings: "/teacher/settings",
     };
@@ -18,6 +18,7 @@ const getRolePaths = (role) => {
   if (normalized === "admin") {
     return {
       profile: "/admin/profile",
+      editProfile: "/admin/profile/edit",
       dashboard: "/admin/dashboard",
       settings: "/admin/settings",
     };
@@ -25,6 +26,7 @@ const getRolePaths = (role) => {
 
   return {
     profile: "/student/profile",
+    editProfile: "/student/profile/edit",
     dashboard: "/student",
     settings: "/student/settings",
   };
@@ -88,6 +90,7 @@ const UserMenu = ({ className = "" }) => {
 
   const menuItems = [
     { label: "My Profile", icon: "👤", path: paths.profile },
+    { label: "Edit Profile", icon: "✏️", path: paths.editProfile },
     { label: "Dashboard", icon: "📊", path: paths.dashboard },
     { label: "Settings", icon: "⚙", path: paths.settings },
   ];

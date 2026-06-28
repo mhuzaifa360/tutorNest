@@ -30,6 +30,19 @@ export const verifyToken = (req, res, next) => {
 
 export const requireAuth = verifyToken;
 
+export const optionalAuth = (req, _res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return next();
+
+  try {
+    req.user = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+  } catch {
+    req.user = null;
+  }
+
+  return next();
+};
+
 // ROLE CHECK (AUTHORIZATION)
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {

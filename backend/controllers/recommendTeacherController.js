@@ -1,5 +1,6 @@
 import { Teacher, Student, Review } from "../models/index.js";
 import { calculateMatchScore } from "../utils/recommendTeachers.js";
+import { approvedTeacherWhere, publicTeacherAttributes, sanitizeTeacher } from "../utils/publicTeacher.js";
 
 export const recommendTeachers = async (req, res) => {
   try {
@@ -18,11 +19,14 @@ export const recommendTeachers = async (req, res) => {
     const studentData = student.toJSON();
     console.log("Student data:", studentData);
     
-    const teachers = await Teacher.findAll();
+    const teachers = await Teacher.findAll({
+      where: approvedTeacherWhere(),
+      attributes: publicTeacherAttributes,
+    });
 
     const scoredTeachers = await Promise.all(
       teachers.map(async (teacher) => {
-        const teacherData = teacher.toJSON();
+        const teacherData = sanitizeTeacher(teacher);
         console.log("Teacher data:", teacherData);
         const score = await calculateMatchScore(studentData, teacherData);
 
@@ -36,7 +40,7 @@ export const recommendTeachers = async (req, res) => {
             : 0;
 
         return {
-          ...teacher.toJSON(),
+          ...teacherData,
           score,
           rating: Number(avgRating.toFixed(1)),
         };

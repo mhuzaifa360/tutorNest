@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Student, Teacher } from "../models/index.js";
+import { FileRecord, Student, Teacher } from "../models/index.js";
 import Admin from "../models/adminModel.js";
 
 const modelByRole = {
@@ -96,11 +96,19 @@ export const getMyProfile = async (req, res) => {
     }
 
     const safeProfile = sanitizeProfile(profile, req.user.role);
+    const files = await FileRecord.findAll({
+      where: { ownerId: req.user.id, ownerRole: req.user.role },
+      order: [["createdAt", "DESC"]],
+    });
     return res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
-      user: safeProfile,
-      data: { user: safeProfile },
+      user: { ...safeProfile, files },
+      data: {
+        user: { ...safeProfile, files },
+        files,
+        documents: files.filter((file) => file.type === "document" || file.type === "verification"),
+      },
     });
   } catch (error) {
     return res.status(500).json({
